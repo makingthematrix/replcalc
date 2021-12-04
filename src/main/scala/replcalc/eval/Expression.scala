@@ -15,3 +15,5 @@ object Expression:
       .getOrElse(Constant(Double.NaN))
   
   val operators: Set[Char] = Set('+', '-', '*', '/')
+  
+  inline def isOperator(char: Char): Boolean = operators.contains(char)

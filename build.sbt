@@ -19,7 +19,6 @@ libraryDependencies ++= Seq(
 testFrameworks += new TestFramework("munit.Framework")
 
 Test / parallelExecution := true
-fork := true
 Test / fork := true
 
 developers := List(
