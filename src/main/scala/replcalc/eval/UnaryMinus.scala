@@ -6,7 +6,7 @@ final case class UnaryMinus(innerExpr: Expression) extends Expression:
 object UnaryMinus extends Parseable[UnaryMinus]:
   override def parse(text: String): Option[UnaryMinus] =
     val trimmed = text.trim
-    if trimmed.charAt(0) == '-' then
+    if trimmed.length > 1 && trimmed.charAt(0) == '-' then
       Some(UnaryMinus(Expression(trimmed.substring(1))))
     else 
       None
