@@ -10,6 +10,7 @@ object Expression:
     val trimmed = text.trim
     AddSubstract.parse(trimmed)
       .orElse(MultiplyDivide.parse(trimmed))
+      .orElse(UnaryMinus.parse(trimmed))
       .orElse(Constant.parse(trimmed))
       .getOrElse(Constant(Double.NaN))
   
