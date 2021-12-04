@@ -12,3 +12,5 @@ object Expression:
       .orElse(MultiplyDivide.parse(trimmed))
       .orElse(Constant.parse(trimmed))
       .getOrElse(Constant(Double.NaN))
+  
+  val operators: Set[Char] = Set('+', '-', '*', '/')

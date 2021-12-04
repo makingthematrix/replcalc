@@ -56,3 +56,10 @@ class ExpressionTest extends munit.FunSuite:
     assertEqualsDouble(Expression("0-3*2/2*4").evaluate, -12.0, 0.001)
     assertEqualsDouble(Expression("3/2+2/4-3*0.5").evaluate, 0.5, 0.001)
   }
+
+  test("Unary minus") {
+    assertEqualsDouble(Expression("-3").evaluate, -3.0, 0.001)
+    assertEqualsDouble(Expression("5*-3").evaluate, -15.0, 0.001)
+    assertEqualsDouble(Expression("2+-3").evaluate, -1.0, 0.001)
+    assertEqualsDouble(Expression("2--3").evaluate, 5.0, 0.001)
+  }
