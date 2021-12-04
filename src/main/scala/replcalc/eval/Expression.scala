@@ -2,17 +2,12 @@ package replcalc.eval
 
 import scala.annotation.tailrec
 
-sealed trait Expression:
+trait Expression:
   def evaluate: Double
 
-final case class Constant(number: Double) extends Expression:
-  override def evaluate: Double = number
-
-final case class Text(text: String) extends Expression:
-  override def evaluate: Double = parse.evaluate
-
-  private def parse: Expression =
-    Constant(text.toDoubleOption.getOrElse(Double.NaN))
-
 object Expression:
-  def apply(text: String): Expression = Text(text)
+  def apply(text: String): Expression =
+    val trimmed = text.trim
+    AddSubstract.parse(trimmed)
+      .orElse(Constant.parse(trimmed))
+      .getOrElse(Constant(Double.NaN))
