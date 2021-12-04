@@ -15,19 +15,13 @@ object AddSubstract extends Parseable[AddSubstract]:
     val trimmed = text.trim
     val plusIndex = trimmed.lastIndexOf("+")
     val minusIndex = lastBinaryMinus(text)
-    if plusIndex > minusIndex && plusIndex < trimmed.length - 1 then
+    val (index, isSubstraction) = if plusIndex > minusIndex then (plusIndex, false) else (minusIndex, true)
+    if index > 0 && index < trimmed.length - 1 then
       Some(
         AddSubstract(
-          Expression(trimmed.substring(0, plusIndex)),
-          Expression(trimmed.substring(plusIndex + 1))
-        )
-      )
-    else if minusIndex > plusIndex && minusIndex < trimmed.length - 1 then
-      Some(
-        AddSubstract(
-          Expression(trimmed.substring(0, minusIndex)),
-          Expression(trimmed.substring(minusIndex + 1)),
-          isSubstraction = true
+          Expression(trimmed.substring(0, index)),
+          Expression(trimmed.substring(index + 1)),
+          isSubstraction = isSubstraction
         )
       )
     else
@@ -35,11 +29,8 @@ object AddSubstract extends Parseable[AddSubstract]:
 
   @tailrec
   private def lastBinaryMinus(text: String): Int =
-    val minusIndex = text.lastIndexOf("-")
-    if minusIndex <= 0 then 
-      -1
-    else if !isOperator(text.charAt(minusIndex - 1)) then 
-      minusIndex
-    else 
-      lastBinaryMinus(text.substring(0, minusIndex))
+    text.lastIndexOf("-") match
+      case index if index <= 0                          => -1
+      case index if !isOperator(text.charAt(index - 1)) => index
+      case index                                        => lastBinaryMinus(text.substring(0, index))
       

@@ -12,21 +12,14 @@ object MultiplyDivide extends Parseable[MultiplyDivide]:
     val trimmed = text.trim
     val mulIndex = trimmed.lastIndexOf("*")
     val divIndex = trimmed.lastIndexOf("/")
-    if mulIndex > divIndex && mulIndex < trimmed.length - 1 then
+    val (index, isDivision) = if mulIndex > divIndex then (mulIndex, false) else (divIndex, true)
+    if index > 0 && index < trimmed.length - 1 then
       Some(
         MultiplyDivide(
-          Expression(trimmed.substring(0, mulIndex)),
-          Expression(trimmed.substring(mulIndex + 1))
-        )
-      )
-    else if divIndex > mulIndex && divIndex < trimmed.length - 1 then
-      Some(
-        MultiplyDivide(
-          Expression(trimmed.substring(0, divIndex)),
-          Expression(trimmed.substring(divIndex + 1)),
-          isDivision = true
+          Expression(trimmed.substring(0, index)),
+          Expression(trimmed.substring(index + 1)),
+          isDivision = isDivision
         )
       )
     else
       None
-      
