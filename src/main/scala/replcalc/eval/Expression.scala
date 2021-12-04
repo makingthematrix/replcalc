@@ -9,5 +9,6 @@ object Expression:
   def apply(text: String): Expression =
     val trimmed = text.trim
     AddSubstract.parse(trimmed)
+      .orElse(MultiplyDivide.parse(trimmed))
       .orElse(Constant.parse(trimmed))
       .getOrElse(Constant(Double.NaN))
