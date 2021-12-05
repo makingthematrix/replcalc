@@ -5,10 +5,10 @@ import Expression.isOperator
 
 final case class AddSubstract(left: Expression, right: Expression, isSubstraction: Boolean = false) extends Expression:
   override def evaluate: Option[Double] =
-    for 
+    for
       l <- left.evaluate
       r <- right.evaluate
-    yield 
+    yield
       if isSubstraction then l - r else l + r
 
 object AddSubstract extends Parseable[AddSubstract]:
@@ -18,10 +18,10 @@ object AddSubstract extends Parseable[AddSubstract]:
     val minusIndex = lastBinaryMinus(text)
     val (index, isSubstraction) = if plusIndex > minusIndex then (plusIndex, false) else (minusIndex, true)
     if index > 0 && index < trimmed.length - 1 then
-      for 
+      for
         left  <- Expression.parse(trimmed.substring(0, index))
         right <- Expression.parse(trimmed.substring(index + 1))
-      yield 
+      yield
         AddSubstract(left, right, isSubstraction)
     else
       None
@@ -29,7 +29,13 @@ object AddSubstract extends Parseable[AddSubstract]:
   @tailrec
   private def lastBinaryMinus(text: String): Int =
     text.lastIndexOf("-") match
-      case index if index <= 0                          => -1
-      case index if !isOperator(text.charAt(index - 1)) => index
-      case index                                        => lastBinaryMinus(text.substring(0, index))
-      
+      case index if index <= 0                         => -1
+      case index if !isOperatorBefore(text, index - 1) => index
+      case index                                       => lastBinaryMinus(text.substring(0, index))
+
+  @tailrec
+  private def isOperatorBefore(text: String, index: Int): Boolean =
+    if index < 0 then false
+    else
+      val ch = text(index)
+      if ch.isWhitespace then isOperatorBefore(text, index - 1) else isOperator(ch)

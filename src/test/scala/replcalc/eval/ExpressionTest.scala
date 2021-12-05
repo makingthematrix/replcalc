@@ -70,3 +70,10 @@ class ExpressionTest extends munit.FunSuite:
     eval("3/2+2/-4-3*0.5", -0.5)
     intercept[ComparisonFailException](eval("-", Double.NaN))
   }
+
+  test("Unary and binary minus") {
+    eval("3--3", 6.0)
+    eval("3+-3", 0.0)
+    eval("3- -3", 6.0)
+    eval("3 - - 3", 6.0)
+  }
