@@ -6,13 +6,19 @@ trait Expression:
   def evaluate: Option[Double]
 
 object Expression extends Parseable[Expression]:
-  def parse(text: String): Option[Expression] =
+  override def parse(text: String): Option[Expression] =
     val trimmed = text.trim
-    AddSubstract.parse(trimmed)
-      .orElse(MultiplyDivide.parse(trimmed))
-      .orElse(UnaryMinus.parse(trimmed))
-      .orElse(Constant.parse(trimmed))
-  
-  val operators: Set[Char] = Set('+', '-', '*', '/')
-  
+    object Parsed:
+      def unapply[T <: Expression](stage: String => Option[T]): Option[T] = stage(trimmed)
+    stages.collectFirst { case Parsed(expression) => expression }
+
   inline def isOperator(char: Char): Boolean = operators.contains(char)
+
+  private val operators: Set[Char] = Set('+', '-', '*', '/')
+
+  private val stages = Seq(
+    AddSubstract.parse,
+    MultiplyDivide.parse,
+    UnaryMinus.parse,
+    Constant.parse
+  )

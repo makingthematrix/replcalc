@@ -2,10 +2,10 @@ package replcalc.eval
 
 final case class MultiplyDivide(left: Expression, right: Expression, isDivision: Boolean = false) extends Expression:
   override def evaluate: Option[Double] =
-    for {
+    for
       l <- left.evaluate
       r <- right.evaluate
-    } yield
+    yield
       if isDivision then l / r else l * r
 
 object MultiplyDivide extends Parseable[MultiplyDivide]:
@@ -15,10 +15,10 @@ object MultiplyDivide extends Parseable[MultiplyDivide]:
     val divIndex = trimmed.lastIndexOf("/")
     val (index, isDivision) = if mulIndex > divIndex then (mulIndex, false) else (divIndex, true)
     if index > 0 && index < trimmed.length - 1 then
-      for {
+      for 
         left  <- Expression.parse(trimmed.substring(0, index))
         right <- Expression.parse(trimmed.substring(index + 1))
-      } yield
+      yield
         MultiplyDivide(left, right, isDivision)
     else
       None
