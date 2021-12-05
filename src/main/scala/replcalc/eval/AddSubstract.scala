@@ -4,11 +4,12 @@ import scala.annotation.tailrec
 import Expression.isOperator
 
 final case class AddSubstract(left: Expression, right: Expression, isSubstraction: Boolean = false) extends Expression:
-  override def evaluate: Double =
-    if isSubstraction then
-      left.evaluate - right.evaluate
-    else
-      left.evaluate + right.evaluate
+  override def evaluate: Option[Double] =
+    for {
+      l <- left.evaluate
+      r <- right.evaluate
+    } yield 
+      if isSubstraction then l - r else l + r
 
 object AddSubstract extends Parseable[AddSubstract]:
   override def parse(text: String): Option[AddSubstract] =
@@ -17,13 +18,11 @@ object AddSubstract extends Parseable[AddSubstract]:
     val minusIndex = lastBinaryMinus(text)
     val (index, isSubstraction) = if plusIndex > minusIndex then (plusIndex, false) else (minusIndex, true)
     if index > 0 && index < trimmed.length - 1 then
-      Some(
-        AddSubstract(
-          Expression(trimmed.substring(0, index)),
-          Expression(trimmed.substring(index + 1)),
-          isSubstraction = isSubstraction
-        )
-      )
+      for {
+        left  <- Expression.parse(trimmed.substring(0, index))
+        right <- Expression.parse(trimmed.substring(index + 1))
+      } yield 
+        AddSubstract(left, right, isSubstraction)
     else
       None
 

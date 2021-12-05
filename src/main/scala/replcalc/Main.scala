@@ -13,5 +13,7 @@ def main(args: String*): Unit =
     if text.trim == ":exit" then
       exit = true
     else
-      val result = Expression(text).evaluate
-      println(result)
+      Expression.parse(text).flatMap(_.evaluate) match {
+        case Some(result) => println(result)
+        case None         => println("Error: Unable to parse or evaluate")
+      }

@@ -1,67 +1,72 @@
 package replcalc.eval
 
-import munit.Location
+import munit.{ComparisonFailException, Location}
 
 class ExpressionTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
 
+  private def eval(text: String, expected: Double, delta: Double = 0.001) =
+    Expression.parse(text).flatMap(_.evaluate) match
+      case Some(result) => assertEqualsDouble(result, expected, delta)
+      case None         => failComparison("Unable to parse or evaluate", text, expected)
+
   test("Number") {
-    assertEqualsDouble(Expression("4").evaluate, 4.0, 0.001)
-    assertEqualsDouble(Expression("4.12").evaluate, 4.12, 0.001)
-    assertEqualsDouble(Expression("0").evaluate, 0.0, 0.00001)
-    assertEqualsDouble(Expression("blah").evaluate, Double.NaN, 0.1)
+    eval("4", 4.0)
+    eval("4.12", 4.12)
+    eval("0", 0.0, 0.00001)
+    intercept[ComparisonFailException](eval("blah", Double.NaN))
   }
 
   test("Add") {
-    assertEqualsDouble(Expression("1+1").evaluate, 2.0, 0.001)
-    assertEqualsDouble(Expression("1+2+3").evaluate, 6.0, 0.001)
+    eval("1+1", 2.0)
+    eval("1+2+3", 6.0)
   }
 
   test("Substract") {
-    assertEqualsDouble(Expression("2-1").evaluate, 1.0, 0.001)
-    assertEqualsDouble(Expression("3-2-1").evaluate, 0.0, 0.001)
-    assertEqualsDouble(Expression("1-2").evaluate, -1.0, 0.001)
+    eval("2-1", 1.0)
+    eval("3-2-1", 0.0)
+    eval("1-2", -1.0)
   }
 
   test("Add and Substract") {
-    assertEqualsDouble(Expression("3+2-1").evaluate, 4.0, 0.001)
-    assertEqualsDouble(Expression("3-2+1").evaluate, 2.0, 0.001)
-    assertEqualsDouble(Expression("3+2-1+4").evaluate, 8.0, 0.001)
-    assertEqualsDouble(Expression("3-2+1-4").evaluate, -2.0, 0.001)
+    eval("3+2-1", 4.0)
+    eval("3-2+1", 2.0)
+    eval("3+2-1+4", 8.0)
+    eval("3-2+1-4", -2.0)
   }
 
   test("Multiply") {
-    assertEqualsDouble(Expression("1*1").evaluate, 1.0, 0.001)
-    assertEqualsDouble(Expression("1*2*3").evaluate, 6.0, 0.001)
-    assertEqualsDouble(Expression("5.0*2.5").evaluate, 12.5, 0.001)
-    assertEqualsDouble(Expression("3.0*0").evaluate, 0.0, 0.001)
+    eval("1*1", 1.0)
+    eval("1*2*3", 6.0)
+    eval("5.0*2.5", 12.5)
+    eval("3.0*0", 0.0)
   }
 
   test("Divide") {
-    assertEqualsDouble(Expression("2/1").evaluate, 2.0, 0.001)
-    assertEqualsDouble(Expression("3/2/2").evaluate, 0.75, 0.001)
-    assertEqualsDouble(Expression("1.0/2.0").evaluate, 0.5, 0.001)
+    eval("2/1", 2.0)
+    eval("3/2/2", 0.75)
+    eval("1.0/2.0", 0.5)
   }
 
   test("Multiply and Divide") {
-    assertEqualsDouble(Expression("3*2/1").evaluate, 6.0, 0.001)
-    assertEqualsDouble(Expression("3/2*1").evaluate, 1.5, 0.001)
-    assertEqualsDouble(Expression("3*2/2*4").evaluate, 12.0, 0.001)
-    assertEqualsDouble(Expression("3/2*2/4").evaluate, 0.75, 0.001)
+    eval("3*2/1", 6.0)
+    eval("3/2*1", 1.5)
+    eval("3*2/2*4", 12.0)
+    eval("3/2*2/4", 0.75)
   }
 
   test("Add and Substract and Multiply and Divide") {
-    assertEqualsDouble(Expression("1+3*2/1").evaluate, 7.0, 0.001)
-    assertEqualsDouble(Expression("3/2*1+1").evaluate, 2.5, 0.001)
-    assertEqualsDouble(Expression("0-3*2/2*4").evaluate, -12.0, 0.001)
-    assertEqualsDouble(Expression("3/2+2/4-3*0.5").evaluate, 0.5, 0.001)
+    eval("1+3*2/1", 7.0)
+    eval("3/2*1+1", 2.5)
+    eval("0-3*2/2*4", -12.0)
+    eval("3/2+2/4-3*0.5", 0.5)
   }
 
   test("Unary minus") {
-    assertEqualsDouble(Expression("-3").evaluate, -3.0, 0.001)
-    assertEqualsDouble(Expression("5*-3").evaluate, -15.0, 0.001)
-    assertEqualsDouble(Expression("2+-3").evaluate, -1.0, 0.001)
-    assertEqualsDouble(Expression("2--3").evaluate, 5.0, 0.001)
-    assertEqualsDouble(Expression("3/2+2/-4-3*0.5").evaluate, -0.5, 0.001)
-    assertEqualsDouble(Expression("-").evaluate, Double.NaN, 0.01)
+    eval("-3", -3.0)
+    eval("5*-3", -15.0)
+    eval("2+-3", -1.0)
+    eval("2--3", 5.0)
+    eval("3/2+2/-4-3*0.5", -0.5)
+    intercept[ComparisonFailException](eval("-", Double.NaN))
   }
