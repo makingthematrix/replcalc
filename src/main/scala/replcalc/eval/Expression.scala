@@ -3,16 +3,15 @@ package replcalc.eval
 import scala.annotation.tailrec
 
 trait Expression:
-  def evaluate: Double
+  def evaluate: Option[Double]
 
-object Expression:
-  def apply(text: String): Expression =
+object Expression extends Parseable[Expression]:
+  def parse(text: String): Option[Expression] =
     val trimmed = text.trim
     AddSubstract.parse(trimmed)
       .orElse(MultiplyDivide.parse(trimmed))
       .orElse(UnaryMinus.parse(trimmed))
       .orElse(Constant.parse(trimmed))
-      .getOrElse(Constant(Double.NaN))
   
   val operators: Set[Char] = Set('+', '-', '*', '/')
   
