@@ -8,6 +8,7 @@ trait Expression:
 object Expression extends Parseable[Expression]:
   override def parse(text: String): Option[Expression] =
     val trimmed = text.trim
+    // about early returns in Scala: https://makingthematrix.wordpress.com/2021/03/09/many-happy-early-returns/
     object Parsed:
       def unapply[T <: Expression](stage: String => Option[T]): Option[T] = stage(trimmed)
     stages.collectFirst { case Parsed(expression) => expression }
