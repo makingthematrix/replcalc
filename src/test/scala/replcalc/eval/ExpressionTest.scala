@@ -6,9 +6,13 @@ class ExpressionTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
 
   private def eval(text: String, expected: Double, delta: Double = 0.001) =
-    Expression.parse(text).flatMap(_.evaluate) match
-      case Some(result) => assertEqualsDouble(result, expected, delta)
-      case None         => failComparison("Unable to parse or evaluate", text, expected)
+    Expression.parse(text) match
+      case None => failComparison("Unable to parse", text, expected)
+      case Some(Left(error)) => failComparison(s"Error: ${error.msg}", text, expected)
+      case Some(Right(expr)) =>
+        expr.evaluate match
+          case Right(result) => assertEqualsDouble(result, expected, delta)
+          case Left(error)   => failComparison(s"Error: ${error.msg}", text, expected)
 
   test("Number") {
     eval("4", 4.0)
@@ -46,6 +50,7 @@ class ExpressionTest extends munit.FunSuite:
     eval("2/1", 2.0)
     eval("3/2/2", 0.75)
     eval("1.0/2.0", 0.5)
+    intercept[ComparisonFailException](eval("1/0", Double.NaN))
   }
 
   test("Multiply and Divide") {

@@ -13,7 +13,7 @@ def main(args: String*): Unit =
     if text.trim == ":exit" then
       exit = true
     else
-      Expression.parse(text).flatMap(_.evaluate) match {
-        case Some(result) => println(result)
-        case None         => println("Error: Unable to parse or evaluate")
-      }
+      Expression.parse(text).map(_.flatMap(_.evaluate)) match
+        case Some(Right(result)) => println(result)
+        case Some(Left(error))   => println(s"Error: ${error.msg}")
+        case None                => println(s"Error: Unable to parse the expression: $text")

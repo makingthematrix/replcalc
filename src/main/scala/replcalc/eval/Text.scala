@@ -1,8 +1,11 @@
 package replcalc.eval
 
 final case class Text(text: String) extends Expression:
-  override def evaluate: Option[Double] =
-    Expression.parse(text).flatMap(_.evaluate)
+  override def evaluate: Either[Error, Double] =
+    Expression.parse(text.trim) match
+      case Some(Right(expression)) => expression.evaluate
+      case Some(Left(error))       => Left(error)
+      case None                    => Left(EvaluationError(s"Text: Unable to evaluate $text"))
 
 object Text extends Parseable[Text]:
-  override def parse(text: String): Option[Text] = Some(Text(text.trim))
+  override def parse(text: String): ParsedExpr[Text] = Some(Right(Text(text.trim)))
