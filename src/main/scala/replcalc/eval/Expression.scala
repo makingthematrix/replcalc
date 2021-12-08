@@ -1,6 +1,7 @@
 package replcalc.eval
 
 import scala.annotation.tailrec
+import Error.*
 
 trait Expression:
   def evaluate: Either[Error, Double]

@@ -1,10 +1,8 @@
 package replcalc.eval
 
-sealed trait Error:
-  val msg: String
-
-final case class ParsingError(override val msg: String) extends Error
-final case class EvaluationError(override val msg: String) extends Error
+enum Error(val msg: String):
+  case ParsingError(override val msg: String) extends Error(msg)
+  case EvaluationError(override val msg: String) extends Error(msg)
 
 object Error:
   val Unused: ParsingError = ParsingError("Unused expression")

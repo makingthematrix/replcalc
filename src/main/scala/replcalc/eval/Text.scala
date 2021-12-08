@@ -1,5 +1,7 @@
 package replcalc.eval
 
+import Error.*
+
 final case class Text(text: String) extends Expression:
   override def evaluate: Either[Error, Double] =
     Expression.parse(text.trim) match

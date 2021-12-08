@@ -1,5 +1,7 @@
 package replcalc.eval
 
+import Error.*
+
 final case class MultiplyDivide(left: Expression, right: Expression, isDivision: Boolean = false) extends Expression:
   override def evaluate: Either[Error, Double] =
     (for
@@ -21,7 +23,7 @@ object MultiplyDivide extends Parseable[MultiplyDivide]:
       (for
         lExpr <- Expression.parse(trimmed.substring(0, index))
         rExpr <- if (lExpr.isRight) Expression.parse(trimmed.substring(index + 1)) else Some(Left(Error.Unused))
-      yield(lExpr, rExpr)).map {
+      yield (lExpr, rExpr)).map {
         case (Right(l), Right(r)) => Right(MultiplyDivide(l, r, isDivision))
         case (Left(error), _)     => Left(error)
         case (_, Left(error))     => Left(error)
