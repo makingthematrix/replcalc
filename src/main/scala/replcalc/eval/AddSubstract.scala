@@ -1,7 +1,6 @@
 package replcalc.eval
 
 import scala.annotation.tailrec
-import Expression.isOperator
 import Error.ParsingError
 
 final case class AddSubstract(left: Expression, right: Expression, isSubstraction: Boolean = false) extends Expression:
@@ -20,8 +19,8 @@ object AddSubstract extends Parseable[AddSubstract]:
     val (index, isSubstraction) = if plusIndex > minusIndex then (plusIndex, false) else (minusIndex, true)
     if index > 0 && index < trimmed.length - 1 then
       (for
-        lExpr <- Expression.parse(trimmed.substring(0, index))
-        rExpr <- if (lExpr.isRight) Expression.parse(trimmed.substring(index + 1)) else Some(Left(Error.Unused))
+        lExpr <- Parser.parse(trimmed.substring(0, index))
+        rExpr <- if (lExpr.isRight) Parser.parse(trimmed.substring(index + 1)) else Some(Left(Error.Unused))
       yield (lExpr, rExpr)).map {
         case (Right(l), Right(r)) => Right(AddSubstract(l, r, isSubstraction))
         case (Left(error), _)     => Left(error)
@@ -42,4 +41,4 @@ object AddSubstract extends Parseable[AddSubstract]:
     if index < 0 then false
     else
       val ch = str(index)
-      if ch.isWhitespace then isOperatorBefore(str, index - 1) else isOperator(ch)
+      if ch.isWhitespace then isOperatorBefore(str, index - 1) else Parser.isOperator(ch)

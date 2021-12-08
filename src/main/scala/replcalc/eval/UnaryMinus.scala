@@ -9,6 +9,6 @@ object UnaryMinus extends Parseable[UnaryMinus]:
   override def parse(line: String): ParsedExpr[UnaryMinus] =
     val trimmed = line.trim
     if trimmed.length > 1 && trimmed.charAt(0) == '-' then
-      Expression.parse(trimmed.substring(1)).map(_.map(UnaryMinus.apply))
+      Parser.parse(trimmed.substring(1)).map(_.map(UnaryMinus.apply))
     else 
       None
