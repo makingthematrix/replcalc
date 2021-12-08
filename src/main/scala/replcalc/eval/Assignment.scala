@@ -16,7 +16,7 @@ object Assignment extends Parseable[Assignment]:
       if !isValidName(name) then
         Some(Left(ParsingError(s"Invalid value name: $name")))
       else
-        Expression.parse(exprStr) match
+        Parser.parse(exprStr) match
           case Some(Right(expression)) => Some(Right(Assignment(name, expression)))
           case Some(Left(error))       => Some(Left(error))
           case None                    => Some(Left(ParsingError(s"Unable to parse: $exprStr")))

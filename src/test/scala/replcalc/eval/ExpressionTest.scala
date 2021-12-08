@@ -6,7 +6,7 @@ class ExpressionTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
 
   private def eval(str: String, expected: Double, delta: Double = 0.001) =
-    Expression.parse(str) match
+    Parser.parse(str) match
       case None => failComparison("Unable to parse", str, expected)
       case Some(Left(error)) => failComparison(s"Error: ${error.msg}", str, expected)
       case Some(Right(expr)) =>

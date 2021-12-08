@@ -21,8 +21,8 @@ object MultiplyDivide extends Parseable[MultiplyDivide]:
     val (index, isDivision) = if mulIndex > divIndex then (mulIndex, false) else (divIndex, true)
     if index > 0 && index < trimmed.length - 1 then
       (for
-        lExpr <- Expression.parse(trimmed.substring(0, index))
-        rExpr <- if (lExpr.isRight) Expression.parse(trimmed.substring(index + 1)) else Some(Left(Error.Unused))
+        lExpr <- Parser.parse(trimmed.substring(0, index))
+        rExpr <- if (lExpr.isRight) Parser.parse(trimmed.substring(index + 1)) else Some(Left(Error.Unused))
       yield (lExpr, rExpr)).map {
         case (Right(l), Right(r)) => Right(MultiplyDivide(l, r, isDivision))
         case (Left(error), _)     => Left(error)
