@@ -2,6 +2,7 @@ package replcalc.eval
 
 import scala.annotation.tailrec
 import Expression.isOperator
+import Error.ParsingError
 
 final case class AddSubstract(left: Expression, right: Expression, isSubstraction: Boolean = false) extends Expression:
   override def evaluate: Either[Error, Double] =

@@ -1,7 +1,6 @@
 package replcalc
 
-import replcalc.eval.Expression
-
+import replcalc.eval.{Error, Expression}
 import scala.io.StdIn.readLine
 
 @main

@@ -1,5 +1,7 @@
 package replcalc.eval
 
+import Error.ParsingError
+
 final case class Constant(number: Double) extends Expression:
   override def evaluate: Either[Error, Double] = Right(number)
 
