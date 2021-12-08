@@ -5,14 +5,14 @@ import munit.{ComparisonFailException, Location}
 class ExpressionTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
 
-  private def eval(text: String, expected: Double, delta: Double = 0.001) =
-    Expression.parse(text) match
-      case None => failComparison("Unable to parse", text, expected)
-      case Some(Left(error)) => failComparison(s"Error: ${error.msg}", text, expected)
+  private def eval(str: String, expected: Double, delta: Double = 0.001) =
+    Expression.parse(str) match
+      case None => failComparison("Unable to parse", str, expected)
+      case Some(Left(error)) => failComparison(s"Error: ${error.msg}", str, expected)
       case Some(Right(expr)) =>
         expr.evaluate match
           case Right(result) => assertEqualsDouble(result, expected, delta)
-          case Left(error)   => failComparison(s"Error: ${error.msg}", text, expected)
+          case Left(error)   => failComparison(s"Error: ${error.msg}", str, expected)
 
   test("Number") {
     eval("4", 4.0)
@@ -81,4 +81,15 @@ class ExpressionTest extends munit.FunSuite:
     eval("3+-3", 0.0)
     eval("3- -3", 6.0)
     eval("3 - - 3", 6.0)
+  }
+
+  test("Assignments") {
+    eval("a = 3", 3.0)
+    eval("_a = 3", 3.0)
+    eval("a_ = 3", 3.0)
+    eval("a_b = 3", 3.0)
+    eval("a1 = 3", 3.0)
+    intercept[ComparisonFailException](eval("1a = 3", Double.NaN))
+    eval("a = 3 + 4", 7.0)
+    eval("a = b = 3", 3.0)
   }
