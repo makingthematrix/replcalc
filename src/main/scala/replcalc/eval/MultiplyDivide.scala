@@ -14,8 +14,8 @@ final case class MultiplyDivide(left: Expression, right: Expression, isDivision:
     }
 
 object MultiplyDivide extends Parseable[MultiplyDivide]:
-  override def parse(text: String): ParsedExpr[MultiplyDivide] =
-    val trimmed = text.trim
+  override def parse(line: String): ParsedExpr[MultiplyDivide] =
+    val trimmed = line.trim
     val mulIndex = trimmed.lastIndexOf("*")
     val divIndex = trimmed.lastIndexOf("/")
     val (index, isDivision) = if mulIndex > divIndex then (mulIndex, false) else (divIndex, true)

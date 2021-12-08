@@ -13,10 +13,10 @@ final case class AddSubstract(left: Expression, right: Expression, isSubstractio
       if isSubstraction then l - r else l + r
 
 object AddSubstract extends Parseable[AddSubstract]:
-  override def parse(text: String): ParsedExpr[AddSubstract] =
-    val trimmed = text.trim
+  override def parse(line: String): ParsedExpr[AddSubstract] =
+    val trimmed = line.trim
     val plusIndex = trimmed.lastIndexOf("+")
-    val minusIndex = lastBinaryMinus(text)
+    val minusIndex = lastBinaryMinus(line)
     val (index, isSubstraction) = if plusIndex > minusIndex then (plusIndex, false) else (minusIndex, true)
     if index > 0 && index < trimmed.length - 1 then
       (for
@@ -31,15 +31,15 @@ object AddSubstract extends Parseable[AddSubstract]:
       None
 
   @tailrec
-  private def lastBinaryMinus(text: String): Int =
-    text.lastIndexOf("-") match
+  private def lastBinaryMinus(str: String): Int =
+    str.lastIndexOf("-") match
       case index if index <= 0                         => -1
-      case index if !isOperatorBefore(text, index - 1) => index
-      case index                                       => lastBinaryMinus(text.substring(0, index))
+      case index if !isOperatorBefore(str, index - 1) => index
+      case index                                       => lastBinaryMinus(str.substring(0, index))
 
   @tailrec
-  private def isOperatorBefore(text: String, index: Int): Boolean =
+  private def isOperatorBefore(str: String, index: Int): Boolean =
     if index < 0 then false
     else
-      val ch = text(index)
-      if ch.isWhitespace then isOperatorBefore(text, index - 1) else isOperator(ch)
+      val ch = str(index)
+      if ch.isWhitespace then isOperatorBefore(str, index - 1) else isOperator(ch)
