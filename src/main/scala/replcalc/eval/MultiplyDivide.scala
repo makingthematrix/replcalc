@@ -14,15 +14,15 @@ final case class MultiplyDivide(left: Expression, right: Expression, isDivision:
     }
 
 object MultiplyDivide extends Parseable[MultiplyDivide]:
-  override def parse(line: String, dictionary: Dictionary): ParsedExpr[MultiplyDivide] =
+  override def parse(line: String, dict: Dictionary): ParsedExpr[MultiplyDivide] =
     val trimmed = line.trim
     val mulIndex = trimmed.lastIndexOf("*")
     val divIndex = trimmed.lastIndexOf("/")
     val (index, isDivision) = if mulIndex > divIndex then (mulIndex, false) else (divIndex, true)
     if index > 0 && index < trimmed.length - 1 then
       (for
-        lExpr <- Parser.parse(trimmed.substring(0, index), dictionary)
-        rExpr <- if (lExpr.isRight) Parser.parse(trimmed.substring(index + 1), dictionary) else Some(Left(Error.Unused))
+        lExpr <- Parser.parse(trimmed.substring(0, index), dict)
+        rExpr <- if (lExpr.isRight) Parser.parse(trimmed.substring(index + 1), dict) else Some(Left(Error.Unused))
       yield (lExpr, rExpr)).map {
         case (Right(l), Right(r)) => Right(MultiplyDivide(l, r, isDivision))
         case (Left(error), _)     => Left(error)
