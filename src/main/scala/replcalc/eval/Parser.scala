@@ -24,4 +24,5 @@ object Parser extends Parseable[Expression]:
         AddSubstract.parse,
         MultiplyDivide.parse,
         UnaryMinus.parse,
+        Value.parse,
         Constant.parse)

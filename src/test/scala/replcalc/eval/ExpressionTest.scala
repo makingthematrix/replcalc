@@ -105,3 +105,23 @@ class ExpressionTest extends munit.FunSuite:
     eval("a = 1", 1.0, dict = dict)
     shouldReturnParsingError(" a = 2", dict = dict)
   }
+
+  test("Use an assigned expression in another expression") {
+    val dict = Dictionary()
+    eval("a = 1", 1.0, dict = dict)
+    eval("a + 1", 2.0, dict = dict)
+  }
+
+  test("Use more than one assigned expression in another expression") {
+    val dict = Dictionary()
+    eval("a = 1", 1.0, dict = dict)
+    eval("b = 2", 2.0, dict = dict)
+    eval("c = a + b", 3.0, dict = dict)
+  }
+
+  test("Handle and error when the value is not assigned") {
+    val dict = Dictionary()
+    eval("a = 1", 1.0, dict = dict)
+    eval("b = 2", 2.0, dict = dict)
+    shouldReturnParsingError("c = d + e", dict = dict)
+  }

@@ -13,7 +13,7 @@ object Assignment extends Parseable[Assignment]:
       val assignIndex = line.indexOf('=')
       val name = line.substring(0, assignIndex).trim
       val exprStr = line.substring(assignIndex + 1).trim
-      if !isValidName(name) then
+      if !Value.isValidValueName(name) then
         Some(Left(ParsingError(s"Invalid value name: $name")))
       else if dict.contains(name) then
         Some(Left(ParsingError(s"The value $name is already defined")))
@@ -26,8 +26,3 @@ object Assignment extends Parseable[Assignment]:
             Some(Left(error))
           case None =>
             Some(Left(ParsingError(s"Unable to parse: $exprStr")))
-
-  private def isValidName(name: String): Boolean =
-    name.nonEmpty &&
-      (name(0).isLetter || name(0) == '_') &&
-      (name.substring(1).forall(ch => ch.isLetterOrDigit || ch == '_'))
