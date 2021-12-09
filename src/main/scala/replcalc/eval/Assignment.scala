@@ -6,7 +6,7 @@ final case class Assignment(name: String, expression: Expression) extends Expres
   override def evaluate: Either[Error, Double] = expression.evaluate
 
 object Assignment extends Parseable[Assignment]:
-  override def parse(line: String, dictionary: Dictionary): ParsedExpr[Assignment] =
+  override def parse(line: String, dict: Dictionary): ParsedExpr[Assignment] =
     if !line.contains("=") then
       None
     else
@@ -15,12 +15,12 @@ object Assignment extends Parseable[Assignment]:
       val exprStr = line.substring(assignIndex + 1).trim
       if !isValidName(name) then
         Some(Left(ParsingError(s"Invalid value name: $name")))
-      else if dictionary.contains(name) then
+      else if dict.contains(name) then
         Some(Left(ParsingError(s"The value $name is already defined")))
       else
-        Parser.parse(exprStr, dictionary) match
+        Parser.parse(exprStr, dict) match
           case Some(Right(expression)) =>
-            dictionary.add(name, expression)
+            dict.add(name, expression)
             Some(Right(Assignment(name, expression)))
           case Some(Left(error)) =>
             Some(Left(error))

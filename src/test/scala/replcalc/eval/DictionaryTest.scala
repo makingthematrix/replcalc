@@ -17,3 +17,10 @@ class DictionaryTest extends munit.FunSuite:
     assertEquals(dict.add("a", Constant(2.0)), false)
     assertEquals(dict.get("a"), Some(Constant(1.0)))
   }
+
+  test("List values") {
+    val dict = Dictionary()
+    dict.add("a", Constant(1.0))
+    dict.add("b", Constant(2.0))
+    assertEquals(dict.listNames, Set("a", "b"))
+  }
