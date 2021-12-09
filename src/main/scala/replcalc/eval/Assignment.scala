@@ -2,8 +2,8 @@ package replcalc.eval
 
 import Error.*
 
-final case class Assignment(name: String, expression: Expression) extends Expression:
-  override def evaluate: Either[Error, Double] = expression.evaluate
+final case class Assignment(name: String, expr: Expression) extends Expression:
+  override def evaluate: Either[Error, Double] = expr.evaluate
 
 object Assignment extends Parseable[Assignment]:
   override def parse(line: String, dict: Dictionary): ParsedExpr[Assignment] =

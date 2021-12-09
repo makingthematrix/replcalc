@@ -30,4 +30,4 @@ private def parseLine(line: String, dict: Dictionary): Unit =
   Parser.parse(line, dict).map(_.flatMap(_.evaluate)) match
     case Some(Right(result)) => println(result)
     case Some(Left(error))   => println(s"Error: ${error.msg}")
-    case None                => println(s"Error: Unable to parse the expression: $line")
+    case None                => println(s"Error: Unable to parse the expr: $line")

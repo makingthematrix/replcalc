@@ -13,7 +13,7 @@ object Parser extends Parseable[Expression]:
     // about early returns in Scala: https://makingthematrix.wordpress.com/2021/03/09/many-happy-early-returns/
     object Parsed:
       def unapply(stage: (String, Dictionary) => ParsedExpr[Expression]): ParsedExpr[Expression] = stage(trimmed, dict)
-    stages.collectFirst { case Parsed(expression) => expression }
+    stages.collectFirst { case Parsed(expr) => expr }
       
   inline def isOperator(char: Char): Boolean = operators.contains(char)
 

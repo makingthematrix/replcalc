@@ -5,4 +5,4 @@ enum Error(val msg: String):
   case EvaluationError(override val msg: String) extends Error(msg)
 
 object Error:
-  val Unused: ParsingError = ParsingError("Unused expression")
+  val Unused: ParsingError = ParsingError("Unused expr")

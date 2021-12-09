@@ -24,7 +24,7 @@ class ExpressionTest extends munit.FunSuite:
     eval("4", 4.0)
     eval("4.12", 4.12)
     eval("0", 0.0, 0.00001)
-    intercept[ComparisonFailException](eval("blah", Double.NaN))
+    shouldReturnParsingError("blah")
   }
 
   test("Add") {
@@ -79,7 +79,7 @@ class ExpressionTest extends munit.FunSuite:
     eval("2+-3", -1.0)
     eval("2--3", 5.0)
     eval("3/2+2/-4-3*0.5", -0.5)
-    intercept[ComparisonFailException](eval("-", Double.NaN))
+    shouldReturnParsingError("-")
   }
 
   test("Unary and binary minus") {
@@ -95,7 +95,7 @@ class ExpressionTest extends munit.FunSuite:
     eval("a_ = 3", 3.0)
     eval("a_b = 3", 3.0)
     eval("a1 = 3", 3.0)
-    intercept[ComparisonFailException](eval("1a = 3", Double.NaN))
+    shouldReturnParsingError("1a = 3")
     eval("a = 3 + 4", 7.0)
     eval("a = b = 3", 3.0)
   }
