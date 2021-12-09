@@ -5,21 +5,21 @@ import replcalc.eval.Error.ParsingError
 type ParsedExpr[T] = Option[Either[ParsingError, T]]
 
 trait Parseable[T <: Expression]:
-  def parse(line: String): ParsedExpr[T]
+  def parse(line: String, dictionary: Dictionary): ParsedExpr[T]
 
 object Parser extends Parseable[Expression]:
-  override def parse(line: String): ParsedExpr[Expression] =
+  override def parse(line: String, dictionary: Dictionary): ParsedExpr[Expression] =
     val trimmed = line.trim
     // about early returns in Scala: https://makingthematrix.wordpress.com/2021/03/09/many-happy-early-returns/
     object Parsed:
-      def unapply(stage: String => ParsedExpr[Expression]): ParsedExpr[Expression] = stage(trimmed)
+      def unapply(stage: (String, Dictionary) => ParsedExpr[Expression]): ParsedExpr[Expression] = stage(trimmed, dictionary)
     stages.collectFirst { case Parsed(expression) => expression }
-
+      
   inline def isOperator(char: Char): Boolean = operators.contains(char)
 
   private val operators: Set[Char] = Set('+', '-', '*', '/')
 
-  private val stages: Seq[String => ParsedExpr[Expression]] = Seq(
+  private val stages: Seq[(String, Dictionary) => ParsedExpr[Expression]] = Seq(
     Assignment.parse,
     AddSubstract.parse,
     MultiplyDivide.parse,
