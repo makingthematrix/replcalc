@@ -1,6 +1,7 @@
 package replcalc
 
-import replcalc.eval.{Parser, Dictionary}
+import replcalc.eval.{Assignment, Dictionary, Parser}
+
 import scala.io.StdIn.readLine
 
 @main
@@ -16,7 +17,7 @@ def main(args: String*): Unit =
     else if trimmed == ":list" then 
       listValues(dict)
     else 
-      parseLine(trimmed, dict)
+      parseLine(trimmed, dict).foreach(println)
 
 private def listValues(dict: Dictionary): Unit =
   dict.listNames.toSeq.sorted.foreach { name =>
@@ -26,8 +27,16 @@ private def listValues(dict: Dictionary): Unit =
     }
   }
   
-private def parseLine(line: String, dict: Dictionary): Unit =
-  Parser.parse(line, dict).map(_.flatMap(_.evaluate)) match
-    case Some(Right(result)) => println(result)
-    case Some(Left(error))   => println(s"Error: ${error.msg}")
-    case None                => println(s"Error: Unable to parse the expr: $line")
+private def parseLine(line: String, dict: Dictionary): Option[String] =
+  Parser.parse(line, dict).map {
+    case Right(Assignment(name, expr)) =>
+      expr.evaluate match
+        case Right(result) => s"$name -> $result"
+        case Left(error)   => s"$name -> Evaluation error: ${error.msg}"
+    case Right(expr) =>
+      expr.evaluate match
+        case Right(result) => s"$result"
+        case Left(error)   => s"Evaluation error: ${error.msg}"
+    case Left(error) =>
+      s"Parsing error: ${error.msg}"
+  }
