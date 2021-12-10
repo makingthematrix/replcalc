@@ -13,4 +13,8 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
 
   inline def contains(name: String): Boolean = expressions.contains(name)
 
-  inline def listNames: Set[String] = expressions.keySet
+  inline def listNames(withSpecial: Boolean = false): Set[String] = 
+    if withSpecial then
+      expressions.keySet
+    else 
+      expressions.keySet.filter(_(0) != '$')

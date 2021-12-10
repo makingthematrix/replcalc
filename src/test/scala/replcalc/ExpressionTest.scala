@@ -5,7 +5,7 @@ import munit.{ComparisonFailException, Location}
 class ExpressionTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
 
-  private def createParser(pre: Preprocessor = Preprocessor(), dict: Dictionary = Dictionary()): Parser = Parser(pre, dict)
+  private def createParser(dict: Dictionary = Dictionary()): Parser = Parser(dict)
 
   private def eval(str: String, expected: Double, delta: Double = 0.001)(implicit parser: Parser) =
     parser.parse(str) match
@@ -137,4 +137,13 @@ class ExpressionTest extends munit.FunSuite:
     eval("a = 1", 1.0)
     eval("b = 2", 2.0)
     shouldReturnParsingError("c = d + e")
+  }
+
+  test("Expressions with parentheses") {
+    implicit def parser: Parser = createParser()
+    eval("1 + (2 + 3) + 4", 10.0)
+    eval("1 - (2 + 3) - 4", -8.0)
+    eval("-(3*-2)", 6.0)
+    eval("(2+3)*2", 10.0)
+    eval("1 + ((2 * 3) - 4) / 5", 1.4)
   }
