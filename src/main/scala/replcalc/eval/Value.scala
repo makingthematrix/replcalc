@@ -6,11 +6,11 @@ final case class Value(name: String, expr: Expression) extends Expression:
   override def evaluate: Either[Error, Double] = expr.evaluate
   
 object Value extends Parseable[Value]:
-  override def parse(line: String, dict: Dictionary): ParsedExpr[Value] =
+  override def parse(line: String, parser: Parser): ParsedExpr[Value] =
     if !isValidValueName(line) then 
       None
     else  
-      dict.get(line) match
+      parser.getValue(line) match
         case Some(expr) => Some(Right(Value(line, expr)))
         case None       => Some(Left(ParsingError(s"Value not found: $line")))
 

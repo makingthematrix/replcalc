@@ -1,12 +1,15 @@
 package replcalc
 
-import replcalc.eval.{Assignment, Dictionary, Parser}
+import replcalc.eval.{Assignment, Dictionary, Parser, Preprocessor}
 
 import scala.io.StdIn.readLine
 
 @main
 def main(args: String*): Unit =
+  val pre = Preprocessor()
   val dict = Dictionary()
+  val parser = Parser(pre, dict)
+
   var exit = false
   while !exit do
     print("> ")
@@ -17,7 +20,7 @@ def main(args: String*): Unit =
     else if trimmed == ":list" then 
       listValues(dict)
     else 
-      parseLine(trimmed, dict).foreach(println)
+      parseLine(parser, trimmed).foreach(println)
 
 private def listValues(dict: Dictionary): Unit =
   dict.listNames.toSeq.sorted.foreach { name =>
@@ -27,8 +30,8 @@ private def listValues(dict: Dictionary): Unit =
     }
   }
   
-private def parseLine(line: String, dict: Dictionary): Option[String] =
-  Parser.parse(line, dict).map {
+private def parseLine(parser: Parser, line: String): Option[String] =
+  parser.parse(line).map {
     case Right(Assignment(name, expr)) =>
       expr.evaluate match
         case Right(result) => s"$name -> $result"
