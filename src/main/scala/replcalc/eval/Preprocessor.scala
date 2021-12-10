@@ -1,9 +1,9 @@
 package replcalc.eval
 
-class Preprocessor:
+class Preprocessor():
   def process(line: String): String =
     removeWhitespaces(line)
-    
+
   private def removeWhitespaces(line: String): String =
     if line.forall(!_.isWhitespace) then line
     else

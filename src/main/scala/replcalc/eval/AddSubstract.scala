@@ -12,14 +12,14 @@ final case class AddSubstract(left: Expression, right: Expression, isSubstractio
       if isSubstraction then l - r else l + r
 
 object AddSubstract extends Parseable[AddSubstract]:
-  override def parse(line: String, dict: Dictionary): ParsedExpr[AddSubstract] =
+  override def parse(line: String, parser: Parser): ParsedExpr[AddSubstract] =
     val plusIndex = line.lastIndexOf("+")
     val minusIndex = lastBinaryMinus(line)
     val (index, isSubstraction) = if plusIndex > minusIndex then (plusIndex, false) else (minusIndex, true)
     if index > 0 && index < line.length - 1 then
       (for
-        lExpr <- Parser.parse(line.substring(0, index), dict)
-        rExpr <- if (lExpr.isRight) Parser.parse(line.substring(index + 1), dict) else Some(Left(Error.Unused))
+        lExpr <- parser.parse(line.substring(0, index))
+        rExpr <- if (lExpr.isRight) parser.parse(line.substring(index + 1)) else Some(Left(Error.Unused))
       yield (lExpr, rExpr)).map {
         case (Right(l), Right(r)) => Right(AddSubstract(l, r, isSubstraction))
         case (Left(error), _)     => Left(error)
