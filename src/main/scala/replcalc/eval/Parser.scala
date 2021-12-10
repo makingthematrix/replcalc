@@ -9,12 +9,14 @@ trait Parseable[T <: Expression]:
 
 object Parser extends Parseable[Expression]:
   override def parse(line: String, dict: Dictionary): ParsedExpr[Expression] =
-    val trimmed = line.trim
+    val processed = pre.process(line)
     // about early returns in Scala: https://makingthematrix.wordpress.com/2021/03/09/many-happy-early-returns/
     object Parsed:
-      def unapply(stage: (String, Dictionary) => ParsedExpr[Expression]): ParsedExpr[Expression] = stage(trimmed, dict)
+      def unapply(stage: (String, Dictionary) => ParsedExpr[Expression]): ParsedExpr[Expression] = stage(processed, dict)
     stages.collectFirst { case Parsed(expr) => expr }
       
+  private val pre = Preprocessor()  
+    
   inline def isOperator(char: Char): Boolean = operators.contains(char)
 
   private val operators: Set[Char] = Set('+', '-', '*', '/')

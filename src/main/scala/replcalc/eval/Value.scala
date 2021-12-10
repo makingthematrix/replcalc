@@ -7,13 +7,12 @@ final case class Value(name: String, expr: Expression) extends Expression:
   
 object Value extends Parseable[Value]:
   override def parse(line: String, dict: Dictionary): ParsedExpr[Value] =
-    val trimmed = line.trim
-    if !isValidValueName(trimmed) then 
+    if !isValidValueName(line) then 
       None
     else  
-      dict.get(trimmed) match
-        case Some(expr) => Some(Right(Value(trimmed, expr)))
-        case None       => Some(Left(ParsingError(s"Value not found: $trimmed")))
+      dict.get(line) match
+        case Some(expr) => Some(Right(Value(line, expr)))
+        case None       => Some(Left(ParsingError(s"Value not found: $line")))
 
   def isValidValueName(name: String): Boolean =
     name.nonEmpty &&
