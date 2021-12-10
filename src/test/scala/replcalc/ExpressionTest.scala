@@ -138,3 +138,12 @@ class ExpressionTest extends munit.FunSuite:
     eval("b = 2", 2.0)
     shouldReturnParsingError("c = d + e")
   }
+
+  test("Expressions with parentheses") {
+    implicit def parser: Parser = createParser()
+    eval("1 + (2 + 3) + 4", 10.0)
+    eval("1 - (2 + 3) - 4", -8.0)
+    eval("-(3*-2)", 6.0)
+    eval("(2+3)*2", 10.0)
+    eval("1 + ((2 * 3) - 4) / 5", 1.4)
+  }

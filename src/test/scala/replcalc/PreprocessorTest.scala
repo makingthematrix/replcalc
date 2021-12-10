@@ -12,7 +12,6 @@ class PreprocessorTest extends munit.FunSuite:
       case Left(error) =>
         fail(s"Parsing error: ${error.msg}")
       case Right(result) =>
-        println(s"result: $result")
         assert(result.startsWith(prefix))
         assert(result.endsWith(suffix))
         assert(!result.contains("("))
