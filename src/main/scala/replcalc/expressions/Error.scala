@@ -1,4 +1,4 @@
-package replcalc.eval
+package replcalc.expressions
 
 enum Error(val msg: String):
   case ParsingError(override val msg: String) extends Error(msg)

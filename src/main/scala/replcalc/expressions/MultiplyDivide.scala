@@ -1,6 +1,7 @@
-package replcalc.eval
+package replcalc.expressions
 
 import Error.*
+import replcalc.Parser
 
 final case class MultiplyDivide(left: Expression, right: Expression, isDivision: Boolean = false) extends Expression:
   override def evaluate: Either[Error, Double] =

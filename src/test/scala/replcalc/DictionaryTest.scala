@@ -1,6 +1,7 @@
-package replcalc.eval
+package replcalc
 
 import munit.Location
+import replcalc.expressions.Constant
 
 class DictionaryTest extends munit.FunSuite:
   implicit val location: Location = Location.empty

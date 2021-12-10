@@ -1,4 +1,4 @@
-package replcalc.eval
+package replcalc
 
 import munit.{ComparisonFailException, Location}
 

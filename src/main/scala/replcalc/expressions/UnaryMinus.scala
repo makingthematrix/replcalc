@@ -1,6 +1,7 @@
-package replcalc.eval
+package replcalc.expressions
 
 import Error.ParsingError
+import replcalc.Parser
 
 final case class UnaryMinus(innerExpr: Expression) extends Expression:
   override def evaluate: Either[Error, Double] = innerExpr.evaluate.map(-_)
