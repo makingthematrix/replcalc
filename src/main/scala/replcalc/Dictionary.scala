@@ -1,4 +1,6 @@
-package replcalc.eval
+package replcalc
+
+import replcalc.expressions.Expression
 
 final class Dictionary(private var expressions: Map[String, Expression] = Map.empty):
   def add(name: String, expr: Expression): Boolean =

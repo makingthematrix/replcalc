@@ -1,4 +1,4 @@
-package replcalc.eval
+package replcalc
 
 class Preprocessor():
   def process(line: String): String =

@@ -1,6 +1,6 @@
 package replcalc
 
-import replcalc.eval.{Assignment, Dictionary, Parser, Preprocessor}
+import replcalc.expressions.Assignment
 
 import scala.io.StdIn.readLine
 

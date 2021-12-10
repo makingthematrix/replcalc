@@ -1,11 +1,7 @@
-package replcalc.eval
+package replcalc
 
-import replcalc.eval.Error.ParsingError
-
-type ParsedExpr[T] = Option[Either[ParsingError, T]]
-
-trait Parseable[T <: Expression]:
-  def parse(line: String, parser: Parser): ParsedExpr[T]
+import replcalc.expressions.*
+import replcalc.{Dictionary, Preprocessor}
 
 final class Parser(pre: Preprocessor, dict: Dictionary):
   self =>
