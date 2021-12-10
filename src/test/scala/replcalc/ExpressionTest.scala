@@ -5,7 +5,7 @@ import munit.{ComparisonFailException, Location}
 class ExpressionTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
 
-  private def createParser(pre: Preprocessor = Preprocessor(), dict: Dictionary = Dictionary()): Parser = Parser(pre, dict)
+  private def createParser(dict: Dictionary = Dictionary()): Parser = Parser(dict)
 
   private def eval(str: String, expected: Double, delta: Double = 0.001)(implicit parser: Parser) =
     parser.parse(str) match
