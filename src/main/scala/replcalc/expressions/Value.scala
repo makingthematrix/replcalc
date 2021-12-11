@@ -5,11 +5,9 @@ import replcalc.{Dictionary, Parser}
 
 final case class Value(name: String) extends Expression:
   override def evaluate(dict: Dictionary): Either[Error, Double] =
-    dict.get(name) match {
+    dict.get(name) match
       case Some(expr) => expr.evaluate(dict)
       case None       => Left(EvaluationError(s"Evaluation error: Value not found: $name"))
-    }
-
   
 object Value extends Parseable[Value]:
   override def parse(line: String, parser: Parser): ParsedExpr[Value] =

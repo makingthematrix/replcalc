@@ -16,6 +16,12 @@ class ExpressionTest extends munit.FunSuite:
           case Right(result) => assertEqualsDouble(result, expected, delta)
           case Left(error)   => failComparison(s"Error: ${error.msg}", str, expected)
 
+  private def parse(str: String)(implicit parser: Parser) =
+    parser.parse(str) match
+      case None => fail(s"Parsed as 'none': $str")
+      case Some(Left(error)) => fail(s"Error: ${error.msg} at line $str")
+      case Some(Right(expr)) =>
+
   private def shouldReturnParsingError(line: String)(implicit parser: Parser) =
     parser.parse(line) match
       case None => fail(s"Parsed as 'none': $line")
@@ -101,7 +107,7 @@ class ExpressionTest extends munit.FunSuite:
     eval("3 - - 3", 6.0)
   }
 
-  test("Assignments") {
+  test("Value assignments") {
     implicit def parser: Parser = createParser()
     eval("a = 3", 3.0)
     eval("_a = 3", 3.0)
@@ -146,4 +152,13 @@ class ExpressionTest extends munit.FunSuite:
     eval("-(3*-2)", 6.0)
     eval("(2+3)*2", 10.0)
     eval("1 + ((2 * 3) - 4) / 5", 1.4)
+  }
+
+  test("Function assignments") {
+    implicit val parser: Parser = createParser()
+    parse("foo(x) = x + 1")
+    parse("bar() = 2 + 1")
+    parse("a = 3")
+    parse("myFunc(x) = a + x + 2")
+    shouldReturnParsingError("myFunc(x) = y")
   }

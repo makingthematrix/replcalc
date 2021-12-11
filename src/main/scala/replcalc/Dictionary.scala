@@ -15,7 +15,7 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
     val name = s"$$$specialValuesCounter"
     expressions += name -> expr
     name
-
+  
   inline def get(name: String): Option[Expression] = expressions.get(name)
 
   inline def contains(name: String): Boolean = expressions.contains(name)
@@ -27,3 +27,4 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
       expressions.keySet.filter(_(0) != '$')
 
   def copy(updates: Map[String, Expression]): Dictionary = Dictionary(expressions ++ updates, specialValuesCounter)
+  
