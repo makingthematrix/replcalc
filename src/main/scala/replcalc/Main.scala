@@ -1,7 +1,6 @@
 package replcalc
 
-import replcalc.expressions.ValueAssignment
-
+import replcalc.expressions.{Expression, FunctionAssignment, ValueAssignment}
 import scala.io.StdIn.readLine
 
 @main
@@ -21,15 +20,22 @@ def main(args: String*): Unit =
       evaluate(trimmed, parser).foreach(println)
 
 private def listValues(dict: Dictionary): Unit =
-  dict.listNames().toSeq.sorted.foreach { name =>
-    dict.get(name).map(_.evaluate(dict)).foreach {
-      case Right(result) => println(s"$name -> $result")
-      case Left(error)   => println(s"Error when evaluating $name: ${error.msg}")
-    }
-  }
+  dict.listNames().toSeq.sorted.map(name => name -> dict.get(name)).map {
+    case (name, Some(FunctionAssignment(_, args, _))) =>
+      s"$name(${args.mkString(",")}) -> Function"
+    case (name, Some(expr)) =>
+      expr.evaluate(dict) match
+        case Right(result) =>
+          s"$name -> $result"
+        case Left(error)   =>
+          s"Error when evaluating $name: ${error.msg}"
+    case (name, _) => s"Error: Unable to find an expression for $name"
+  }.foreach(println)
   
 private def evaluate(line: String, parser: Parser): Option[String] =
   parser.parse(line).map {
+    case Right(FunctionAssignment(name, args, _)) =>
+      s"$name(${args.mkString(",")}) -> Function"
     case Right(ValueAssignment(name, expr)) =>
       expr.evaluate(parser.dictionary) match
         case Right(result) => s"$name -> $result"
