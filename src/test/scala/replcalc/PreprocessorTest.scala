@@ -5,8 +5,7 @@ import munit.Location
 class PreprocessorTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
 
-  private def pre = Parser().preprocessor
-
+  private def pre: Preprocessor = Parser().preprocessor
   private def evalParens(line: String, prefix: String = "", suffix: String = ""): Unit =
     pre.process(line) match
       case Left(error) =>
@@ -40,6 +39,13 @@ class PreprocessorTest extends munit.FunSuite:
     evalParens("(1+2)")
     evalParens("(1+2)+3", "", "+3")
     evalParens("1+(2+3)", "1+", "")
+  }
+
+  test("Parentheses with assignments") {
+    evalParens("a = 1 + (2 + 3) + 4", "a=1+", "+4")
+    evalParens("b = (1 + 2)")
+    evalParens("c = (1 + 2) + 3", "c=", "+3")
+    evalParens("d = 1+ (2 + 3)", "d=1+", "")
   }
 
   test("Handle more than one set of parentheses") {
