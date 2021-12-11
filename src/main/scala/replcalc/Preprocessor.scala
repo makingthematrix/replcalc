@@ -5,8 +5,6 @@ import replcalc.expressions.Error.ParsingError
 import scala.annotation.tailrec
 
 final class Preprocessor(parser: Parser):
-  private var specialValuesCounter = 0L
-
   def process(line: String): Either[ParsingError, String] =
     for {
       noWhitespaces <- removeWhitespaces(line)
@@ -26,7 +24,7 @@ final class Preprocessor(parser: Parser):
 
   @tailrec
   private def removeParentheses(line: String): Either[ParsingError, String] =
-    val opening = line.indexOf("(")
+    val opening = line.indexOf('(')
     if opening == -1 then
       Right(line)
     else
@@ -35,10 +33,10 @@ final class Preprocessor(parser: Parser):
           val closing = opening + index
           parser.parse(line.substring(opening + 1, closing)) match
             case Some(Right(expr)) =>
-              specialValuesCounter += 1
-              val name = s"$$$specialValuesCounter"
-              parser.addValue(name, expr)
-              removeParentheses(s"${line.substring(0, opening)}$name${line.substring(closing + 1)}")
+              val pre = line.substring(0, opening)
+              val name = parser.dictionary.addSpecial(expr)
+              val post = line.substring(closing + 1)
+              removeParentheses(s"$pre$name$post")
             case Some(Left(error)) =>
               Left(error)
             case None =>

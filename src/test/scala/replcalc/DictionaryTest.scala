@@ -31,3 +31,10 @@ class DictionaryTest extends munit.FunSuite:
     dict.add("a", Constant(1.0))
     assertEquals(dict.get("b"), None)
   }
+
+  test("Copy with updates") {
+    val dict = Dictionary()
+    dict.add("a", Constant(1.0))
+    val newDict = dict.copy(Map("b" -> Constant(2.0)))
+    assertEquals(newDict.get("b"), Some(Constant(2.0)))
+  }
