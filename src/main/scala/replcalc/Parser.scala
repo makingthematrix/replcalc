@@ -3,13 +3,13 @@ package replcalc
 import replcalc.expressions.*
 import replcalc.{Dictionary, Preprocessor}
 
-final class Parser(dict: Dictionary = Dictionary()):
+final class Parser(private val dict: Dictionary = Dictionary()):
   self =>
   import Parser.*
 
   private lazy val pre = Preprocessor(this)
   
-  // for tests
+  def dictionary: Dictionary = dict
   def preprocessor: Preprocessor = pre 
 
   def parse(line: String): ParsedExpr[Expression] =

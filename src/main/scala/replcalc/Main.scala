@@ -6,8 +6,7 @@ import scala.io.StdIn.readLine
 
 @main
 def main(args: String*): Unit =
-  val dict = Dictionary()
-  lazy val parser = Parser(dict)
+  lazy val parser = Parser()
 
   var exit = false
   while !exit do
@@ -17,26 +16,26 @@ def main(args: String*): Unit =
     if trimmed == ":exit" then 
       exit = true
     else if trimmed == ":list" then 
-      listValues(dict)
-    else 
-      parseLine(parser, trimmed).foreach(println)
+      listValues(parser.dictionary)
+    else
+      evaluate(trimmed, parser).foreach(println)
 
 private def listValues(dict: Dictionary): Unit =
   dict.listNames().toSeq.sorted.foreach { name =>
-    dict.get(name).map(_.evaluate).foreach {
+    dict.get(name).map(_.evaluate(dict)).foreach {
       case Right(result) => println(s"$name -> $result")
       case Left(error)   => println(s"Error when evaluating $name: ${error.msg}")
     }
   }
   
-private def parseLine(parser: Parser, line: String): Option[String] =
+private def evaluate(line: String, parser: Parser): Option[String] =
   parser.parse(line).map {
     case Right(Assignment(name, expr)) =>
-      expr.evaluate match
+      expr.evaluate(parser.dictionary) match
         case Right(result) => s"$name -> $result"
         case Left(error)   => s"$name -> Evaluation error: ${error.msg}"
     case Right(expr) =>
-      expr.evaluate match
+      expr.evaluate(parser.dictionary) match
         case Right(result) => s"$result"
         case Left(error)   => s"Evaluation error: ${error.msg}"
     case Left(error) =>
