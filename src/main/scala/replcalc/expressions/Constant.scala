@@ -1,10 +1,10 @@
 package replcalc.expressions
 
 import Error.ParsingError
-import replcalc.Parser
+import replcalc.{Dictionary, Parser}
 
 final case class Constant(number: Double) extends Expression:
-  override def evaluate: Either[Error, Double] = Right(number)
+  override def evaluate(dict: Dictionary): Either[Error, Double] = Right(number)
 
 object Constant extends Parseable[Constant]:
   override def parse(line: String, parser: Parser): ParsedExpr[Constant] =

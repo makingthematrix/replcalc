@@ -1,13 +1,13 @@
 package replcalc.expressions
 
 import Error.*
-import replcalc.Parser
+import replcalc.{Dictionary, Parser}
 
 final case class MultiplyDivide(left: Expression, right: Expression, isDivision: Boolean = false) extends Expression:
-  override def evaluate: Either[Error, Double] =
+  override def evaluate(dict: Dictionary): Either[Error, Double] =
     (for
-      lResult <- left.evaluate
-      rResult <- right.evaluate
+      lResult <- left.evaluate(dict)
+      rResult <- right.evaluate(dict)
     yield (lResult, rResult)).flatMap {
       case (l, r) if isDivision && r == 0.0 => Left(EvaluationError(s"Division by zero: $l / $r"))
       case (l, r) if isDivision             => Right(l / r)

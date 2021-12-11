@@ -12,7 +12,7 @@ class ExpressionTest extends munit.FunSuite:
       case None => failComparison("Parsed as 'none'", str, expected)
       case Some(Left(error)) => failComparison(s"Error: ${error.msg}", str, expected)
       case Some(Right(expr)) =>
-        expr.evaluate match
+        expr.evaluate(parser.dictionary) match
           case Right(result) => assertEqualsDouble(result, expected, delta)
           case Left(error)   => failComparison(s"Error: ${error.msg}", str, expected)
 
