@@ -1,6 +1,6 @@
 package replcalc
 
-import replcalc.expressions.Assignment
+import replcalc.expressions.ValueAssignment
 
 import scala.io.StdIn.readLine
 
@@ -30,7 +30,7 @@ private def listValues(dict: Dictionary): Unit =
   
 private def evaluate(line: String, parser: Parser): Option[String] =
   parser.parse(line).map {
-    case Right(Assignment(name, expr)) =>
+    case Right(ValueAssignment(name, expr)) =>
       expr.evaluate(parser.dictionary) match
         case Right(result) => s"$name -> $result"
         case Left(error)   => s"$name -> Evaluation error: ${error.msg}"
