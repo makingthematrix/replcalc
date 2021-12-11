@@ -7,9 +7,13 @@ import scala.annotation.tailrec
 final class Preprocessor(parser: Parser):
   def process(line: String): Either[ParsingError, String] =
     for {
-      noWhitespaces <- removeWhitespaces(line)
-      noParentheses <- removeParentheses(noWhitespaces)
-    } yield noParentheses
+      line          <- removeWhitespaces(line)
+      assignIndex   =  line.indexOf('=')
+      (left, right) =  if assignIndex == -1 then ("", line)
+                       else (line.substring(0, assignIndex), line.substring(assignIndex + 1))
+      right         <- removeParentheses(right)
+    } yield
+      if left.isEmpty then right else s"${left}=${right}"
 
   private def removeWhitespaces(line: String): Either[ParsingError, String] =
     if line.forall(!_.isWhitespace) then
