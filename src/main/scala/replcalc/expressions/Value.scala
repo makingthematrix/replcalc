@@ -15,7 +15,7 @@ object Value extends Parseable[Value]:
   override def parse(line: String, parser: Parser): ParsedExpr[Value] =
     if !isValidValueName(line, true) then 
       None
-    else if !parser.containsValue(line) then
+    else if !parser.dictionary.contains(line) then
       Some(Left(ParsingError(s"Parsing error: Value not found: $line")))
     else
       Some(Right(Value(line)))

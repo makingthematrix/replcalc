@@ -15,13 +15,13 @@ object Assignment extends Parseable[Assignment]:
       val name = line.substring(0, assignIndex)
       if !Value.isValidValueName(name) then
         Some(Left(ParsingError(s"Invalid value name: $name")))
-      else if parser.containsValue(name) then
+      else if parser.dictionary.contains(name) then
         Some(Left(ParsingError(s"The value $name is already defined")))
       else
         val exprStr = line.substring(assignIndex + 1)
         parser.parse(exprStr) match
           case Some(Right(expression)) =>
-            parser.addValue(name, expression)
+            parser.dictionary.add(name, expression)
             Some(Right(Assignment(name, expression)))
           case Some(Left(error)) =>
             Some(Left(error))
