@@ -25,7 +25,7 @@ final class Parser(private val dict: Dictionary = Dictionary()):
 object Parser:
   inline def isOperator(char: Char): Boolean = operators.contains(char)
 
-  private val operators: Set[Char] = Set('+', '-', '*', '/')
+  private val operators: Set[Char] = Set('+', '-', '*', '/', ',')
 
   private val stages: Seq[(String, Parser) => ParsedExpr[Expression]] =
     Seq(
