@@ -1,17 +1,18 @@
 package replcalc
 
+import replcalc.Preprocessor.Flags
 import replcalc.expressions.Error.ParsingError
 
 import scala.annotation.tailrec
 
-final class Preprocessor(parser: Parser):
+final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
   def process(line: String): Either[ParsingError, String] =
     for {
-      line          <- removeWhitespaces(line)
+      line          <- if flags.removeWhitespaces then removeWhitespaces(line) else Right(line)
       assignIndex   =  line.indexOf('=')
       (left, right) =  if assignIndex == -1 then ("", line)
                        else (line.substring(0, assignIndex), line.substring(assignIndex + 1))
-      right         <- removeParentheses(right)
+      right         <- if flags.removeParentheses then removeParentheses(right) else Right(right)
     } yield
       if left.isEmpty then right else s"${left}=${right}"
 
@@ -29,7 +30,7 @@ final class Preprocessor(parser: Parser):
   @tailrec
   private def removeParentheses(line: String): Either[ParsingError, String] =
     findNonFunctionOpeningParens(line) match
-      case None => 
+      case None =>
         Right(line)
       case Some(opening) =>
         findMatchingParens(line.substring(opening)) match
@@ -47,18 +48,18 @@ final class Preprocessor(parser: Parser):
                 Left(ParsingError(s"Preprocessor: Unable to parse: $line"))
           case None =>
             Left(ParsingError(s"Preprocessor: Unable to find the matching closing parenthesis: $line"))
-    
+
   private def findNonFunctionOpeningParens(line: String): Option[Int] =
     val index = line.indexOf('(')
-    if index == -1 then 
+    if index == -1 then
       None
-    else if index == 0 || Parser.isOperator(line(index - 1)) then 
+    else if index == 0 || Parser.isOperator(line(index - 1)) then
       Some(index)
-    else 
+    else
       findNonFunctionOpeningParens(line.substring(index + 1)).map(_ + index + 1)
-  
+
   private def findMatchingParens(expr: String): Option[Int] =
-    if expr.isEmpty then 
+    if expr.isEmpty then
       None
     else
       val (index, counter) = expr.drop(1).foldLeft((0, 1)) {
@@ -69,3 +70,10 @@ final class Preprocessor(parser: Parser):
         case ((index, counter), _)                   => (index + 1, counter)
       }
       if counter == 0 then Some(index) else None
+
+object Preprocessor:
+  final case class Flags(removeWhitespaces: Boolean = true,
+                         removeParentheses: Boolean = true)
+
+  object Flags:
+    val AllTrue = Flags()
