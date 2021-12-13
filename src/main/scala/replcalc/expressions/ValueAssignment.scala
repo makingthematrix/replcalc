@@ -15,7 +15,7 @@ object ValueAssignment extends Parseable[ValueAssignment]:
       parseValue(line.substring(0, assignIndex), line.substring(assignIndex + 1), parser)
 
   private def parseValue(name: String, exprStr: String, parser: Parser): ParsedExpr[ValueAssignment] =
-    if !Value.isValidValueName(name) then
+    if !Dictionary.isValidName(name) then
       Some(Left(ParsingError(s"Invalid value name: $name")))
     else if parser.dictionary.contains(name) then
       Some(Left(ParsingError(s"The value $name is already defined")))

@@ -24,11 +24,11 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
     val startIndex = name.indexOf('(')
     val endIndex = name.indexOf(')')
     val functionName = name.substring(0, startIndex)
-    if startIndex > endIndex || !Value.isValidValueName(functionName) then
+    if startIndex > endIndex || !Dictionary.isValidName(functionName) then
       Some(Left(ParsingError(s"Invalid function name: $functionName")))
     else
       val args = name.substring(startIndex + 1, endIndex).split(",").map(_.trim).filter(_.nonEmpty).toSet
-      args.collect { case arg if !Value.isValidValueName(arg) => arg } match
+      args.collect { case arg if !Dictionary.isValidName(arg) => arg } match
         case invalidArgs if invalidArgs.nonEmpty =>
           Some(Left(ParsingError(s"Invalid argument(s): ${invalidArgs.mkString(", ")}")))
         case _ =>

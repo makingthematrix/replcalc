@@ -11,14 +11,9 @@ final case class Value(name: String) extends Expression:
   
 object Value extends Parseable[Value]:
   override def parse(line: String, parser: Parser): ParsedExpr[Value] =
-    if !isValidValueName(line, true) then 
+    if !Dictionary.isValidName(line, true) then 
       None
     else if !parser.dictionary.contains(line) then
       Some(Left(ParsingError(s"Parsing error: Value not found: $line")))
     else
       Some(Right(Value(line)))
-
-  def isValidValueName(name: String, canBeSpecial: Boolean = false): Boolean =
-    name.nonEmpty &&
-      (name(0).isLetter || name(0) == '_' || (canBeSpecial && name(0) == '$')) &&
-      name.substring(1).forall(ch => ch.isLetterOrDigit || ch == '_')

@@ -76,4 +76,4 @@ object Preprocessor:
                          removeParentheses: Boolean = true)
 
   object Flags:
-    val AllTrue = Flags()
+    val AllTrue: Flags = Flags()

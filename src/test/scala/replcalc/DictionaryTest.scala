@@ -38,3 +38,17 @@ class DictionaryTest extends munit.FunSuite:
     val newDict = dict.copy(Map("b" -> Constant(2.0)))
     assertEquals(newDict.get("b"), Some(Constant(2.0)))
   }
+
+  test("Valid and invalid names") {
+    assert(Dictionary.isValidName("a"))
+    assert(Dictionary.isValidName("_a"))
+    assert(Dictionary.isValidName("a_"))
+    assert(Dictionary.isValidName("a1"))
+    assert(Dictionary.isValidName("a_b"))
+    assert(Dictionary.isValidName("$1", canBeSpecial = true))
+    assert(!Dictionary.isValidName("$1"))
+    assert(!Dictionary.isValidName(":"))
+    assert(!Dictionary.isValidName("()"))
+    assert(!Dictionary.isValidName(""))
+    assert(!Dictionary.isValidName("1a"))
+  }
