@@ -1,7 +1,6 @@
 package replcalc
 
 import replcalc.expressions.*
-import replcalc.{Dictionary, Preprocessor}
 
 final class Parser(private val dict: Dictionary = Dictionary()):
   self =>
