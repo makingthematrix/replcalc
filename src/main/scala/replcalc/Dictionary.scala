@@ -25,7 +25,7 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
     if withSpecial then
       expressions.keySet
     else
-      expressions.keySet.filter(_(0) != '$')
+      expressions.keySet.filter(_.head != '$')
 
   def copy(updates: Map[String, Expression]): Dictionary = 
     Dictionary(expressions ++ updates, specialValuesCounter)
@@ -33,5 +33,5 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
 object Dictionary:
   def isValidName(name: String, canBeSpecial: Boolean = false): Boolean =
     name.nonEmpty &&
-      (name(0).isLetter || name(0) == '_' || (canBeSpecial && name(0) == '$')) &&
+      (name.head.isLetter || name.head == '_' || (canBeSpecial && name.head == '$')) &&
       name.substring(1).forall(ch => ch.isLetterOrDigit || ch == '_')

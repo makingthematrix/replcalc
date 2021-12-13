@@ -8,7 +8,7 @@ final case class UnaryMinus(innerExpr: Expression) extends Expression:
   
 object UnaryMinus extends Parseable[UnaryMinus]:
   override def parse(line: String, parser: Parser): ParsedExpr[UnaryMinus] =
-    if line.length > 1 && line.charAt(0) == '-' then
+    if line.length > 1 && line.head == '-' then
       parser.parse(line.substring(1)).map(_.map(UnaryMinus.apply))
     else 
       None
