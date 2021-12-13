@@ -1,11 +1,12 @@
 package replcalc
 
+import replcalc.Dictionary.isValidName
 import replcalc.expressions.Expression
 
 final class Dictionary(private var expressions: Map[String, Expression] = Map.empty,
                        private var specialValuesCounter: Long = 0L):
   def add(name: String, expr: Expression): Boolean =
-    if expressions.contains(name) then false
+    if !isValidName(name) || expressions.contains(name) then false
     else
       expressions += name -> expr
       true
@@ -26,5 +27,11 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
     else
       expressions.keySet.filter(_(0) != '$')
 
-  def copy(updates: Map[String, Expression]): Dictionary = Dictionary(expressions ++ updates, specialValuesCounter)
+  def copy(updates: Map[String, Expression]): Dictionary = 
+    Dictionary(expressions ++ updates, specialValuesCounter)
   
+object Dictionary:
+  def isValidName(name: String, canBeSpecial: Boolean = false): Boolean =
+    name.nonEmpty &&
+      (name(0).isLetter || name(0) == '_' || (canBeSpecial && name(0) == '$')) &&
+      name.substring(1).forall(ch => ch.isLetterOrDigit || ch == '_')
