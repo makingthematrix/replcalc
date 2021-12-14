@@ -1,6 +1,7 @@
 package replcalc
 
 import munit.Location
+import replcalc.Preprocessor.Flags
 
 class PreprocessorTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
@@ -84,7 +85,8 @@ class PreprocessorTest extends munit.FunSuite:
   }
 
   test("Ignore function parentheses") {
-    val pre = Parser().preprocessor
+    val pre = Parser(preprocessorFlags = Flags(wrapFunctionArguments = false)).preprocessor
+
     assertEquals(pre.process("foo(1)"), Right("foo(1)"))
     assertEquals(pre.process("foo(1)+1"), Right("foo(1)+1"))
     assertEquals(pre.process("2+foo(3,4)"), Right("2+foo(3,4)"))
@@ -116,4 +118,16 @@ class PreprocessorTest extends munit.FunSuite:
         assert(!result.contains("(4+5)"))
       case Left(error) =>
         fail(error.msg)
+  }
+
+  test("Wrap parentheses around function arguments") {
+    val pre = Parser(preprocessorFlags = Flags(removeParens = false)).preprocessor
+    assertEquals(pre.process("foo(4)"), Right("foo(4)"))
+    assertEquals(pre.process("foo(4+5)"), Right("foo((4+5))"))
+    assertEquals(pre.process("foo(4,5)"), Right("foo(4,5)"))
+    assertEquals(pre.process("foo(1+2,3+4)"), Right("foo((1+2),(3+4))"))
+    assertEquals(pre.process("foo(4)+bar(5)"), Right("foo(4)+bar(5)"))
+    assertEquals(pre.process("foo(1+2,3+4)+bar(1+2,3+4)"), Right("foo((1+2),(3+4))+bar((1+2),(3+4))"))
+    assertEquals(pre.process("(foo(1+2,3+4)+2)+bar(1+2,3+4)"), Right("(foo((1+2),(3+4))+2)+bar((1+2),(3+4))"))
+    assertEquals(pre.process("foo(1,bar(2,3),4)"), Right("foo(1,(bar(2,3)),4)"))
   }

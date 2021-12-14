@@ -1,7 +1,7 @@
 package replcalc.expressions
 
 import replcalc.{Dictionary, Parser}
-import replcalc.expressions.Error.ParsingError
+import replcalc.expressions.Error
 
 type ParsedExpr[T] = Option[Either[Error, T]]
 
