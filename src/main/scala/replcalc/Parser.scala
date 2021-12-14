@@ -34,6 +34,7 @@ object Parser:
       AddSubstract.parse,
       MultiplyDivide.parse,
       UnaryMinus.parse,
+      Function.parse,
       Value.parse,
       Constant.parse
     )

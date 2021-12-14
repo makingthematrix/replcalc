@@ -21,11 +21,11 @@ object ValueAssignment extends Parseable[ValueAssignment]:
       Some(Left(ParsingError(s"The value $name is already defined")))
     else
       parser.parse(exprStr) match
+        case None =>
+          Some(Left(ParsingError(s"Unable to parse: $exprStr")))
+        case Some(Left(error)) =>
+          Some(Left(error))
         case Some(Right(expression)) =>
           val assignment = ValueAssignment(name, expression)
           parser.dictionary.add(name, assignment)
           Some(Right(assignment))
-        case Some(Left(error)) =>
-          Some(Left(error))
-        case None =>
-          Some(Left(ParsingError(s"Unable to parse: $exprStr")))
