@@ -21,28 +21,27 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
           val functionName = left.substring(0, opening)
           val argsStr = left.substring(opening + 1, closing)
           val right = line.substring(assignIndex + 1)
-          parseFunction(functionName, argsStr, right, parser)
+          parseFunctionAssignment(functionName, argsStr, right, parser)
       }
 
-  private def parseFunction(functionName: String, argsStr: String, exprStr: String, parser: Parser): ParsedExpr[FunctionAssignment] =
+  private def parseFunctionAssignment(functionName: String, argsStr: String, exprStr: String, parser: Parser): ParsedExpr[FunctionAssignment] =
     if !Dictionary.isValidName(functionName) then
       Some(Left(ParsingError(s"Invalid function name: $functionName")))
     else
       val argNames = argsStr.split(",").map(_.trim).filter(_.nonEmpty).toSeq
-      val error = argNames.collect { case argName if !Dictionary.isValidName(argName) => argName }
-      error match
-        case invalidArgs if invalidArgs.nonEmpty =>
-          Some(Left(ParsingError(s"Invalid argument(s): ${invalidArgs.mkString(", ")}")))
-        case _ =>
-          val argsMap = argNames.map(name => name -> Value(name)).toMap
-          val innerDict = parser.dictionary.copy(argsMap)
-          Parser(innerDict).parse(exprStr) match
-            case Some(Right(expression)) =>
-              FunctionAssignment(functionName, argNames, expression).pipe { assignment =>
-                parser.dictionary.add(functionName, assignment)
-                Some(Right(assignment))
-              }
-            case Some(Left(error)) =>
-              Some(Left(error))
-            case None =>
-              Some(Left(ParsingError(s"Unable to parse: $exprStr")))
+      val errors = argNames.collect { case argName if !Dictionary.isValidName(argName) => argName }
+      if errors.nonEmpty then
+        Some(Left(ParsingError(s"""Invalid argument(s): ${errors.mkString(", ")}""")))
+      else
+        val argsMap = argNames.map(name => name -> Value(name)).toMap
+        val innerDict = parser.dictionary.copy(argsMap)
+        Parser(innerDict).parse(exprStr) match
+          case None =>
+            Some(Left(ParsingError(s"Unable to parse: $exprStr")))
+          case Some(Left(error)) =>
+            Some(Left(error))
+          case Some(Right(expression)) =>
+            FunctionAssignment(functionName, argNames, expression).pipe { assignment =>
+              parser.dictionary.add(functionName, assignment)
+              Some(Right(assignment))
+            }

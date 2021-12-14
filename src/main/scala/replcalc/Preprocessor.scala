@@ -2,12 +2,13 @@ package replcalc
 
 import replcalc.Preprocessor.Flags
 import replcalc.expressions.Error
+import replcalc.expressions.Error.PreprocessorError
 
 import scala.annotation.tailrec
 
 final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
   import Preprocessor.*
-
+  
   def process(line: String): Either[Error, String] =
     for
       line          <- if flags.removeWhitespaces then removeWhitespaces(line) else Right(line)
@@ -46,7 +47,7 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
   private def wrapFunctionArguments(line: String): Either[Error, String] =
     withParens(line, functionParens = true) { (opening, closing) =>
       val inside = line.substring(opening + 1, closing)
-      val args =
+      val args: Seq[Either[Error, String]] =
         if inside.isEmpty then
           Nil
         else
@@ -58,15 +59,15 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
             case arg =>
               wrapFunctionArguments(arg).map(wrapped => s"($wrapped)")
           }
-      args.find(_.isLeft) match
-        case Some(error) =>
-          error
-        case None =>
-          wrapFunctionArguments(line.substring(closing + 1)).map { post =>
-            val pre = line.substring(0, opening)
-            val wrapped = args.collect { case Right(arg) => arg }.mkString(",")
-            s"$pre($wrapped)$post"
-          }
+      val errors = args.collect { case Left(err: Error) => err.msg }
+      if errors.nonEmpty then
+        Left(PreprocessorError(s"""${errors.mkString("; ")}"""))
+      else
+        wrapFunctionArguments(line.substring(closing + 1)).map { post =>
+          val pre = line.substring(0, opening)
+          val wrapped = args.collect { case Right(arg) => arg }.mkString(",")
+          s"$pre($wrapped)$post"
+        }
     }
 
   private def withParens(line: String, functionParens: Boolean)(body: (Int, Int) => Either[Error, String]): Either[Error, String] =
@@ -77,7 +78,7 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
         Left(error)
       case Some(Right(opening, closing)) =>
         body(opening, closing)
-
+  
 object Preprocessor:
   final case class Flags(removeWhitespaces: Boolean = true,
                          wrapFunctionArguments: Boolean = true,
@@ -85,7 +86,7 @@ object Preprocessor:
 
   object Flags:
     val AllTrue: Flags = Flags()
-
+  
   def findParens(line: String, functionParens: Boolean): Option[Either[Error, (Int, Int)]] =
     inline def isFunctionParens(line: String, atIndex: Int): Boolean = atIndex != 0 && !Parser.isOperator(line(atIndex - 1))
     val opening = line.indexOf('(')
