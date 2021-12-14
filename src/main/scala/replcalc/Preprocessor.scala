@@ -6,6 +6,8 @@ import replcalc.expressions.Error
 import scala.annotation.tailrec
 
 final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
+  import Preprocessor.*
+
   def process(line: String): Either[Error, String] =
     for
       line          <- if flags.removeWhitespaces then removeWhitespaces(line) else Right(line)
@@ -67,25 +69,6 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
           }
     }
 
-  private def splitByCommas(line: String): List[String] =
-    findNextComma(line) match
-      case None             => List(line)
-      case Some(commaIndex) => line.substring(0, commaIndex) :: splitByCommas(line.substring(commaIndex + 1))
-
-  private def findNextComma(line: String): Option[Int] =
-    val commaIndex = line.indexOf(',')
-    if commaIndex == -1 then
-      None
-    else if commaIndex == 0 then
-      Some(0)
-    else
-      findParens(line, true) match
-        case None                                              => Some(commaIndex)
-        case Some(Left(error))                                 => None
-        case Some(Right((opening, _))) if commaIndex < opening => Some(commaIndex)
-        case Some(Right((_, closing))) if commaIndex > closing => Some(commaIndex)
-        case Some(Right((_, closing)))                         => findNextComma(line.substring(closing + 1)).map(_ + closing + 1)
-
   private def withParens(line: String, functionParens: Boolean)(body: (Int, Int) => Either[Error, String]): Either[Error, String] =
     findParens(line, functionParens) match
       case None =>
@@ -95,13 +78,21 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
       case Some(Right(opening, closing)) =>
         body(opening, closing)
 
-  private def findParens(line: String, functionParens: Boolean): Option[Either[Error, (Int, Int)]] =
+object Preprocessor:
+  final case class Flags(removeWhitespaces: Boolean = true,
+                         wrapFunctionArguments: Boolean = true,
+                         removeParens: Boolean = true)
+
+  object Flags:
+    val AllTrue: Flags = Flags()
+
+  def findParens(line: String, functionParens: Boolean): Option[Either[Error, (Int, Int)]] =
     inline def isFunctionParens(line: String, atIndex: Int): Boolean = atIndex != 0 && !Parser.isOperator(line(atIndex - 1))
     val opening = line.indexOf('(')
     if opening == -1 then
       None
     else if (functionParens && isFunctionParens(line, opening)) ||
-            (!functionParens && !isFunctionParens(line, opening)) then
+      (!functionParens && !isFunctionParens(line, opening)) then
       findClosingParens(line.substring(opening)) match
         case None =>
           Some(Left(Error.PreprocessorError(s"Unable to find the matching closing parenthesis: $line")))
@@ -124,10 +115,21 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
       }
       if counter == 0 then Some(index) else None
 
-object Preprocessor:
-  final case class Flags(removeWhitespaces: Boolean = true,
-                         wrapFunctionArguments: Boolean = true,
-                         removeParens: Boolean = true)
+  def splitByCommas(line: String): List[String] =
+    findNextComma(line) match
+      case None             => List(line)
+      case Some(commaIndex) => line.substring(0, commaIndex) :: splitByCommas(line.substring(commaIndex + 1))
 
-  object Flags:
-    val AllTrue: Flags = Flags()
+  private def findNextComma(line: String): Option[Int] =
+    val commaIndex = line.indexOf(',')
+    if commaIndex == -1 then
+      None
+    else if commaIndex == 0 then
+      Some(0)
+    else
+      findParens(line, true) match
+        case None                                              => Some(commaIndex)
+        case Some(Left(error))                                 => None
+        case Some(Right((opening, _))) if commaIndex < opening => Some(commaIndex)
+        case Some(Right((_, closing))) if commaIndex > closing => Some(commaIndex)
+        case Some(Right((_, closing)))                         => findNextComma(line.substring(closing + 1)).map(_ + closing + 1)
