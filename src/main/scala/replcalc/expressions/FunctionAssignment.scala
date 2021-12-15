@@ -33,7 +33,7 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
       if errors.nonEmpty then
         Some(Left(ParsingError(s"""Invalid argument(s): ${errors.mkString(", ")}""")))
       else
-        val argsMap = argNames.map(name => name -> Value(name)).toMap
+        val argsMap = argNames.map(name => name -> Argument(name)).toMap
         val innerDict = parser.dictionary.copy(argsMap)
         Parser(innerDict).parse(exprStr) match
           case None =>
