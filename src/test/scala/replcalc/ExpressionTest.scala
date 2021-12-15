@@ -109,7 +109,7 @@ class ExpressionTest extends munit.FunSuite:
     eval("3 - - 3", 6.0)
   }
 
-  test("Value assignments") {
+  test("Variable assignments") {
     implicit def parser: Parser = createParser()
     eval("a = 3", 3.0)
     eval("_a = 3", 3.0)
@@ -121,10 +121,11 @@ class ExpressionTest extends munit.FunSuite:
     eval("a = b = 3", 3.0)
   }
 
-  test("Forbidden to reassign") {
+  test("Variable reassignments") {
     implicit val parser: Parser = createParser() // val, not def, so the same parser will be used in all evaluations
     eval("a = 1", 1.0)
-    shouldReturnParsingError(" a = 2")
+    eval("a = 2", 2.0)
+    eval("a", 2.0)
   }
 
   test("Use an assigned expression in another expression") {

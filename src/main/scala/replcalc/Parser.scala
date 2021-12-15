@@ -30,11 +30,11 @@ object Parser:
   private val stages: Seq[(String, Parser) => ParsedExpr[Expression]] =
     Seq(
       FunctionAssignment.parse,
-      ValueAssignment.parse,
+      Assignment.parse,
       AddSubstract.parse,
       MultiplyDivide.parse,
       UnaryMinus.parse,
       Function.parse,
-      Value.parse,
+      Variable.parse,
       Constant.parse
     )
