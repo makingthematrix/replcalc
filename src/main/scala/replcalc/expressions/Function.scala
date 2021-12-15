@@ -32,7 +32,7 @@ object Function extends Parseable[Function]:
             line
               .substring(opening + 1, closing)
               .split(",")
-              .map(arg => arg -> parser.parse(arg))
+              .collect { case arg if arg.nonEmpty => arg -> parser.parse(arg) }
               .toSeq
           val errors = args.collect {
             case (argName, None)              => s"Unable to parse argument: $argName"

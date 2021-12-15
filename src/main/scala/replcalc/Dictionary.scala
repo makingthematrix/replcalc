@@ -1,15 +1,26 @@
 package replcalc
 
 import replcalc.Dictionary.isValidName
-import replcalc.expressions.Expression
+import replcalc.expressions.{Expression, Assignment}
 
 final class Dictionary(private var expressions: Map[String, Expression] = Map.empty,
                        private var specialValuesCounter: Long = 0L):
+  def canAssign(name: String): Boolean =
+    expressions.get(name) match
+      case Some(_ : Assignment) => true
+      case None if isValidName(name) => true
+      case _ => false
+  
   def add(name: String, expr: Expression): Boolean =
-    if !isValidName(name) || expressions.contains(name) then false
-    else
-      expressions += name -> expr
-      true
+    expressions.get(name) match
+      case Some(_ : Assignment) =>
+        expressions += name -> expr
+        true
+      case None if isValidName(name) =>
+        expressions += name -> expr
+        true
+      case _ =>
+        false
 
   def addSpecial(expr: Expression): String =
     specialValuesCounter += 1

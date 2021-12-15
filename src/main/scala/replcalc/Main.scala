@@ -1,6 +1,7 @@
 package replcalc
 
-import replcalc.expressions.{Expression, FunctionAssignment, ValueAssignment}
+import replcalc.expressions.{Constant, Expression, FunctionAssignment, Assignment}
+
 import scala.io.StdIn.readLine
 
 @main
@@ -34,11 +35,10 @@ private def evaluate(line: String, parser: Parser): Option[String] =
 
 private def replForm(expr: Expression, dict: Dictionary): String =
   expr match
-    case FunctionAssignment(name, args, _) => s"$name(${args.mkString(",")}) -> Function"
-    case ValueAssignment(name, expr) =>
-      expr.evaluate(dict) match
-        case Right(result) => s"$name -> $result"
-        case Left(error)   => s"$name -> Evaluation error: ${error.msg}"
+    case FunctionAssignment(name, args, _) =>
+      s"$name(${args.mkString(",")}) -> Function"
+    case Assignment(name, Constant(number)) =>
+      s"$name -> $number"
     case expr =>
       expr.evaluate(dict) match
         case Right(result) => result.toString
