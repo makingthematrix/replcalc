@@ -10,25 +10,24 @@ final case class Assignment(name: String, constant: Constant) extends Expression
 object Assignment extends Parseable[Assignment]:
   override def parse(line: String, parser: Parser): ParsedExpr[Assignment] =
     if !line.contains("=") then
-      None
+      ParsedExpr.empty
     else
       val assignIndex = line.indexOf('=')
-      Some { parseAssignment(line.substring(0, assignIndex), line.substring(assignIndex + 1), parser) }
+      parseAssignment(line.substring(0, assignIndex), line.substring(assignIndex + 1), parser)
 
-  private def parseAssignment(name: String, expressionStr: String, parser: Parser): Either[Error, Assignment] =
+  private def parseAssignment(name: String, expressionStr: String, parser: Parser): ParsedExpr[Assignment] =
     if !Dictionary.isValidName(name) then
-      Left(ParsingError(s"Invalid variable name: $name"))
+      ParsedExpr.error(s"Invalid variable name: $name")
     else if !parser.dictionary.canAssign(name) then
-      Left(ParsingError(s"Unable to assign to: $name"))
+      ParsedExpr.error(s"Unable to assign to: $name")
     else
       parser
         .parse(expressionStr)
-        .map {
-          case Left(error) =>
-            Left(error)
-          case Right(expression) =>
-            expression.evaluate(parser.dictionary).map { number =>
+        .happyPath { expression =>
+          expression
+            .evaluate(parser.dictionary).map { number =>
               Assignment(name, Constant(number)).tap { parser.dictionary.add(name, _) }
             }
+            .pipe(Some(_))
         }
-        .getOrElse(Left(ParsingError(s"Unable to parse: $expressionStr")))
+        .errorIfEmpty(s"Unable to parse: $expressionStr")

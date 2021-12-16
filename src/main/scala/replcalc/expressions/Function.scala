@@ -14,19 +14,17 @@ final case class Function(name: String, args: Seq[Expression]) extends Expressio
 
 object Function extends Parseable[Function]:
   override def parse(line: String, parser: Parser): ParsedExpr[Function] =
-    Preprocessor.findParens(line, functionParens = true) match
-      case None =>
-        None
-      case Some(Left(error)) =>
-        Some(Left(error))
-      case Some(Right((opening, closing))) =>
+    Preprocessor.findParens(line, functionParens = true).flatMap {
+      case Left(error) =>
+        ParsedExpr.error(error)
+      case Right((opening, closing)) =>
         val name = line.substring(0, opening)
         if !Dictionary.isValidName(name) then
-          None
+          ParsedExpr.empty
         else if !parser.dictionary.contains(name) then
-          Some(Left(ParsingError(s"Function not found: $name")))
+          ParsedExpr.error(s"Function not found: $name")
         else if closing + 1 < line.length then
-          Some(Left(ParsingError(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}")))
+          ParsedExpr.error(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}")
         else
           val args =
             line
@@ -39,7 +37,8 @@ object Function extends Parseable[Function]:
             case (argName, Some(Left(error))) => s"Error while evaluating argument $argName: ${error.msg}"
           }
           if errors.nonEmpty then
-            Some(Left(ParsingError(s"""${errors.mkString("; ")}""")))
+            ParsedExpr.error(errors.mkString("; "))
           else
-            val validArgs: Seq[Expression] = args.collect { case (_, Some(Right(expr))) => expr }
-            Some(Right(Function(name, validArgs)))
+            val validArgs = args.collect { case (_, Some(Right(expr))) => expr }
+            ParsedExpr(Function(name, validArgs))
+    }

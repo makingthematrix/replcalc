@@ -32,16 +32,17 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
 
   private def removeParens(line: String): Either[Error, String] =
     withParens(line, functionParens = false) { (opening, closing) =>
-      parser.parse(line.substring(opening + 1, closing)) match
-        case None =>
-          Left(Error.PreprocessorError(s"Unable to parse: $line"))
-        case Some(Left(error)) =>
-          Left(error)
-        case Some(Right(expr)) =>
-          val pre = line.substring(0, opening)
-          val name = parser.dictionary.addSpecial(expr)
-          val post = line.substring(closing + 1)
-          removeParens(s"$pre$name$post")
+      parser
+        .parse(line.substring(opening + 1, closing))
+        .map {
+          case Left(error) =>
+            Left(error)
+          case Right(expr) =>
+            val pre  = line.substring(0, opening)
+            val name = parser.dictionary.addSpecial(expr)
+            val post = line.substring(closing + 1)
+            removeParens(s"$pre$name$post")
+        }.getOrElse(Left(Error.PreprocessorError(s"Unable to parse: $line")))
     }
 
   private def wrapFunctionArguments(line: String): Either[Error, String] =
@@ -61,12 +62,12 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
           }
       val errors = args.collect { case Left(err: Error) => err.msg }
       if errors.nonEmpty then
-        Left(PreprocessorError(s"""${errors.mkString("; ")}"""))
+        Left(PreprocessorError(errors.mkString("; ")))
       else
         wrapFunctionArguments(line.substring(closing + 1)).map { post =>
-          val pre = line.substring(0, opening)
-          val wrapped = args.collect { case Right(arg) => arg }.mkString(",")
-          s"$pre($wrapped)$post"
+          val pre     = line.substring(0, opening)
+          val argList = args.collect { case Right(arg) => arg }.mkString(",")
+          s"$pre($argList)$post"
         }
     }
 
@@ -80,9 +81,9 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
         body(opening, closing)
   
 object Preprocessor:
-  final case class Flags(removeWhitespaces: Boolean = true,
+  final case class Flags(removeWhitespaces:     Boolean = true,
                          wrapFunctionArguments: Boolean = true,
-                         removeParens: Boolean = true)
+                         removeParens:          Boolean = true)
 
   object Flags:
     val AllTrue: Flags = Flags()
@@ -92,16 +93,17 @@ object Preprocessor:
     val opening = line.indexOf('(')
     if opening == -1 then
       None
-    else if (functionParens && isFunctionParens(line, opening)) ||
-      (!functionParens && !isFunctionParens(line, opening)) then
-      findClosingParens(line.substring(opening)) match
-        case None =>
-          Some(Left(Error.PreprocessorError(s"Unable to find the matching closing parenthesis: $line")))
-        case Some(offset) =>
-          Some(Right((opening, opening + offset)))
+    else if (functionParens && isFunctionParens(line, opening)) || (!functionParens && !isFunctionParens(line, opening)) then
+      findClosingParens(line.substring(opening))
+        .map(offset => Right((opening, opening + offset)))
+        .orElse(Some(Left(PreprocessorError(s"Unable to find the matching closing parenthesis: $line"))))
     else
       findParens(line.substring(opening + 1), functionParens)
-        .map(res => res.map { case (op, cl) => (opening + 1 + op, opening + 1 + cl) })
+        .map(nextParens =>
+          nextParens.map {
+            case (nextOpening, nextClosing) => (opening + 1 + nextOpening, opening + 1 + nextClosing)
+          }
+        )
 
   private def findClosingParens(expr: String): Option[Int] =
     if expr.isEmpty then

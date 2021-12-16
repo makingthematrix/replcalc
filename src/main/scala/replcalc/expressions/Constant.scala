@@ -8,6 +8,6 @@ final case class Constant(number: Double) extends Expression:
 
 object Constant extends Parseable[Constant]:
   override def parse(line: String, parser: Parser): ParsedExpr[Constant] =
-    line.toDoubleOption match
-      case Some(d) => Some(Right(Constant(d)))
-      case None    => Some(Left(ParsingError(s"Unable to parse: $line")))
+    line
+      .toDoubleOption
+      .map(number => Right(Constant(number)))
