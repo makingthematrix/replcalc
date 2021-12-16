@@ -6,40 +6,37 @@ import scala.io.StdIn.readLine
 
 @main
 def main(args: String*): Unit =
-  lazy val parser = Parser()
-
+  val parser = Parser()
   var exit = false
   while !exit do
     print("> ")
-    val line = readLine()
-    val trimmed = line.trim
-    if trimmed == ":exit" then 
-      exit = true
-    else if trimmed == ":list" then 
-      listValues(parser.dictionary)
-    else
-      evaluate(trimmed, parser).foreach(println)
+    readLine().trim match
+      case ":exit" =>
+        exit = true
+      case ":list" =>
+        list(parser.dictionary)
+      case line =>
+        evaluate(parser, line).foreach(println)
 
-private def listValues(dict: Dictionary): Unit =
-  dict
-    .listNames.toSeq.sorted
-    .map(name => dict.get(name))
-    .collect { case Some(expr) => replForm(expr, dict) }
+private def list(dictionary: Dictionary): Unit =
+  dictionary
+    .allExpressions
+    .map(replForm(dictionary, _))
     .foreach(println)
   
-private def evaluate(line: String, parser: Parser): Option[String] =
+private def evaluate(parser: Parser, line: String): Option[String] =
   parser.parse(line).map {
-    case Right(expr) => replForm(expr, parser.dictionary)
+    case Right(expr) => replForm(parser.dictionary, expr)
     case Left(error) => s"Parsing error: ${error.msg}"
   }
 
-private def replForm(expr: Expression, dict: Dictionary): String =
-  expr match
+private def replForm(dictionary: Dictionary, expression: Expression): String =
+  expression match
     case FunctionAssignment(name, args, _) =>
-      s"$name(${args.mkString(",")}) -> Function"
+      s"$name(${args.mkString(", ")}) -> Function"
     case Assignment(name, Constant(number)) =>
       s"$name -> $number"
     case expr =>
-      expr.evaluate(dict) match
+      expr.evaluate(dictionary) match
         case Right(result) => result.toString
         case Left(error)   => s"Evaluation error: ${error.msg}"

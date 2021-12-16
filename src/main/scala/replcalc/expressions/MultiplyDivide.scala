@@ -17,7 +17,7 @@ final case class MultiplyDivide(left: Expression, right: Expression, isDivision:
     }
 
 object MultiplyDivide extends Parseable[MultiplyDivide]:
-  override def parse(line: String, parser: Parser): ParsedExpr[MultiplyDivide] =
+  override def parse(parser: Parser, line: String): ParsedExpr[MultiplyDivide] =
     val mulIndex = line.lastIndexOf("*")
     val divIndex = line.lastIndexOf("/")
     val (index, isDivision) = if mulIndex > divIndex then (mulIndex, false) else (divIndex, true)
@@ -27,7 +27,7 @@ object MultiplyDivide extends Parseable[MultiplyDivide]:
       val innerExpressions =
         for
           lExpr <- parser.parse(line.substring(0, index))
-          rExpr <- if (lExpr.isRight) parser.parse(line.substring(index + 1)) else ParsedExpr.unused
+          rExpr <- if lExpr.isRight then parser.parse(line.substring(index + 1)) else ParsedExpr.unused
         yield (lExpr, rExpr)
       innerExpressions.map {
         case (Left(error), _)     => Left(error)

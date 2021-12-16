@@ -8,13 +8,16 @@ import replcalc.Parser.isOperator
 final case class AddSubstract(left: Expression, right: Expression, isSubstraction: Boolean = false) extends Expression:
   override def evaluate(dict: Dictionary): Either[Error, Double] =
     for
-      l <- left.evaluate(dict)
-      r <- right.evaluate(dict)
+      lResult <- left.evaluate(dict)
+      rResult <- right.evaluate(dict)
     yield
-      if isSubstraction then l - r else l + r
+      if isSubstraction then 
+        lResult - rResult 
+      else 
+        lResult + rResult
 
 object AddSubstract extends Parseable[AddSubstract]:
-  override def parse(line: String, parser: Parser): ParsedExpr[AddSubstract] =
+  override def parse(parser: Parser, line: String): ParsedExpr[AddSubstract] =
     val plusIndex  = line.lastIndexOf("+")
     val minusIndex = lastBinaryMinus(line)
     val (index, isSubstraction) = if plusIndex > minusIndex then (plusIndex, false) else (minusIndex, true)

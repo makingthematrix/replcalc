@@ -22,7 +22,7 @@ Test / parallelExecution := true
 Test / fork := true
 
 developers := List(
-  Developer("makingthematrix", "Maciej Gorywoda", "maciej.gorywoda@wire.com", url("https://github.com/makingthematrix"))
+  Developer("makingthematrix", "Maciej Gorywoda", "makingthematrix@protonmail.com", url("https://github.com/makingthematrix"))
 )
 
 licenses := Seq("GPL 3.0" -> url("https://www.gnu.org/licenses/gpl-3.0.en.html"))

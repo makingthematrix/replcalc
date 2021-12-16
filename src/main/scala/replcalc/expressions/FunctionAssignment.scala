@@ -8,11 +8,11 @@ final case class FunctionAssignment(name: String, argNames: Seq[String], expr: E
   override def evaluate(dict: Dictionary): Either[Error, Double] = expr.evaluate(dict)
 
 object FunctionAssignment extends Parseable[FunctionAssignment]:
-  override def parse(line: String, parser: Parser): ParsedExpr[FunctionAssignment] =
+  override def parse(parser: Parser, line: String): ParsedExpr[FunctionAssignment] =
     if !line.contains("=") then
-      None
+      ParsedExpr.empty
     else
-      val assignIndex = line.indexOf('=')
+      val assignIndex   = line.indexOf('=')
       val assignmentStr = line.substring(0, assignIndex)
       Preprocessor.findParens(assignmentStr, functionParens = true).flatMap {
         case Left(error) =>
@@ -21,10 +21,10 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
           val functionName  = assignmentStr.substring(0, opening)
           val arguments     = assignmentStr.substring(opening + 1, closing)
           val expressionStr = line.substring(assignIndex + 1)
-          parseAssignment(functionName, arguments, expressionStr, parser)
+          parseAssignment(parser, functionName, arguments, expressionStr)
       }
 
-  private def parseAssignment(functionName: String, arguments: String, expressionStr: String, parser: Parser): ParsedExpr[FunctionAssignment] =
+  private def parseAssignment(parser: Parser, functionName: String, arguments: String, expressionStr: String): ParsedExpr[FunctionAssignment] =
     if !Dictionary.isValidName(functionName) then
       ParsedExpr.error(s"Invalid function name: $functionName")
     else if parser.dictionary.contains(functionName) then
@@ -33,7 +33,7 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
       val argNames = arguments.split(",").map(_.trim).filter(_.nonEmpty).toSeq
       val errors   = argNames.collect { case argName if !Dictionary.isValidName(argName) => argName }
       if errors.nonEmpty then
-        ParsedExpr.error(s"""Invalid argument(s): ${errors.mkString(", ")}""")
+        ParsedExpr.error(s"Invalid argument(s): ${errors.mkString(", ")}")
       else
         val argsMap   = argNames.map(name => name -> Variable(name)).toMap
         val innerDict = parser.dictionary.copy(argsMap)

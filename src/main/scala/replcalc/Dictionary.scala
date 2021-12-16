@@ -32,7 +32,9 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
 
   inline def contains(name: String): Boolean = expressions.contains(name)
 
-  inline def listNames: Set[String] = expressions.keySet.filter(_.head != '$')
+  inline def names: Set[String] = expressions.keySet.filter(_.head != '$')
+
+  inline def allExpressions: Seq[Expression] = expressions.filter(_._1.head != '$').toSeq.sortBy(_._1).map(_._2)
 
   def copy(updates: Map[String, Expression]): Dictionary = 
     Dictionary(expressions ++ updates, specialValuesCounter)
