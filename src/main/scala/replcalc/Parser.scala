@@ -36,5 +36,6 @@ object Parser:
       UnaryMinus.parse,
       Function.parse,
       Variable.parse,
-      Constant.parse
+      Constant.parse,
+      Failure.parse
     )

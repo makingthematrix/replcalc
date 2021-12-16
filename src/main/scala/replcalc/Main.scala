@@ -22,7 +22,7 @@ def main(args: String*): Unit =
 
 private def listValues(dict: Dictionary): Unit =
   dict
-    .listNames().toSeq.sorted
+    .listNames.toSeq.sorted
     .map(name => dict.get(name))
     .collect { case Some(expr) => replForm(expr, dict) }
     .foreach(println)

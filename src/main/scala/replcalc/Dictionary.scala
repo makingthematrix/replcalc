@@ -7,9 +7,9 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
                        private var specialValuesCounter: Long = 0L):
   def canAssign(name: String): Boolean =
     expressions.get(name) match
-      case Some(_ : Assignment) => true
+      case Some(_ : Assignment)      => true
       case None if isValidName(name) => true
-      case _ => false
+      case _                         => false
   
   def add(name: String, expr: Expression): Boolean =
     expressions.get(name) match
@@ -32,11 +32,7 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
 
   inline def contains(name: String): Boolean = expressions.contains(name)
 
-  inline def listNames(withSpecial: Boolean = false): Set[String] =
-    if withSpecial then
-      expressions.keySet
-    else
-      expressions.keySet.filter(_.head != '$')
+  inline def listNames: Set[String] = expressions.keySet.filter(_.head != '$')
 
   def copy(updates: Map[String, Expression]): Dictionary = 
     Dictionary(expressions ++ updates, specialValuesCounter)
