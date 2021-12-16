@@ -23,7 +23,7 @@ class DictionaryTest extends munit.FunSuite:
     val dict = Dictionary()
     dict.add("a", Constant(1.0))
     dict.add("b", Constant(2.0))
-    assertEquals(dict.listNames, Set("a", "b"))
+    assertEquals(dict.names, Set("a", "b"))
   }
 
   test("Handle an attempt to get an unassigned expression") {

@@ -13,7 +13,7 @@ final case class Function(name: String, args: Seq[Expression]) extends Expressio
         Left(EvaluationError(s"Function not found: $name"))
 
 object Function extends Parseable[Function]:
-  override def parse(line: String, parser: Parser): ParsedExpr[Function] =
+  override def parse(parser: Parser, line: String): ParsedExpr[Function] =
     Preprocessor.findParens(line, functionParens = true).flatMap {
       case Left(error) =>
         ParsedExpr.error(error)

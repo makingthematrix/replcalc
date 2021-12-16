@@ -3,10 +3,11 @@ package replcalc
 import replcalc.Preprocessor.Flags
 import replcalc.expressions.Error
 import replcalc.expressions.Error.PreprocessorError
+import replcalc.Parser.isOperator
 
 import scala.annotation.tailrec
 
-final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
+final class Preprocessor(parser: Parser, flags: Flags = Flags.AllFlagsOn):
   import Preprocessor.*
   
   def process(line: String): Either[Error, String] =
@@ -19,16 +20,28 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
     yield
       if left.isEmpty then right else s"$left=$right"
 
-  private def removeWhitespaces(line: String): Either[Error, String] =
-    if line.forall(!_.isWhitespace) then
-      Right(line)
-    else
-      val sb = StringBuilder(line.length)
-      line.foreach {
-        case ch if !ch.isWhitespace => sb.addOne(ch)
-        case _ =>
-      }
-      Right(sb.toString)
+  private def removeWhitespaces(line: String): Either[Error, String] = Right(line.filterNot(_.isWhitespace))
+  
+  private def wrapFunctionArguments(line: String): Either[Error, String] =
+    withParens(line, functionParens = true) { (opening, closing) =>
+      val inside = line.substring(opening + 1, closing)
+      val args =
+        splitByCommas(inside).map {
+          case arg if arg.forall(c => !isOperator(c)) && findParens(arg, functionParens = true).isEmpty =>
+            Right(arg)
+          case arg =>
+            wrapFunctionArguments(arg).map(wrapped => s"($wrapped)")
+        }
+      val errors = args.collect { case Left(error) => error.msg }
+      if errors.nonEmpty then
+        Left(PreprocessorError(errors.mkString("; ")))
+      else
+        wrapFunctionArguments(line.substring(closing + 1)).map { post =>
+          val pre     = line.substring(0, opening)
+          val argList = args.collect { case Right(arg) => arg }.mkString(",")
+          s"$pre($argList)$post"
+        }
+    }
 
   private def removeParens(line: String): Either[Error, String] =
     withParens(line, functionParens = false) { (opening, closing) =>
@@ -45,51 +58,23 @@ final class Preprocessor(parser: Parser, flags: Flags = Flags.AllTrue):
         }.getOrElse(Left(Error.PreprocessorError(s"Unable to parse: $line")))
     }
 
-  private def wrapFunctionArguments(line: String): Either[Error, String] =
-    withParens(line, functionParens = true) { (opening, closing) =>
-      val inside = line.substring(opening + 1, closing)
-      val args: Seq[Either[Error, String]] =
-        if inside.isEmpty then
-          Nil
-        else
-          splitByCommas(inside).map {
-            case arg if arg.forall(c => !Parser.isOperator(c)) && findParens(arg, functionParens = true).isEmpty =>
-              Right(arg)
-            case arg if arg.head == '(' && arg.last == ')' && arg.count(_ == '(') == 1 && arg.count(_ == ')') == 1 =>
-              Right(arg)
-            case arg =>
-              wrapFunctionArguments(arg).map(wrapped => s"($wrapped)")
-          }
-      val errors = args.collect { case Left(err: Error) => err.msg }
-      if errors.nonEmpty then
-        Left(PreprocessorError(errors.mkString("; ")))
-      else
-        wrapFunctionArguments(line.substring(closing + 1)).map { post =>
-          val pre     = line.substring(0, opening)
-          val argList = args.collect { case Right(arg) => arg }.mkString(",")
-          s"$pre($argList)$post"
-        }
-    }
-
-  private def withParens(line: String, functionParens: Boolean)(body: (Int, Int) => Either[Error, String]): Either[Error, String] =
-    findParens(line, functionParens) match
-      case None =>
-        Right(line)
-      case Some(Left(error)) =>
-        Left(error)
-      case Some(Right(opening, closing)) =>
-        body(opening, closing)
-  
 object Preprocessor:
   final case class Flags(removeWhitespaces:     Boolean = true,
                          wrapFunctionArguments: Boolean = true,
                          removeParens:          Boolean = true)
 
   object Flags:
-    val AllTrue: Flags = Flags()
-  
+    val AllFlagsOn: Flags = Flags()
+
+  def withParens(line: String, functionParens: Boolean)(body: (Int, Int) => Either[Error, String]): Either[Error, String] =
+    findParens(line, functionParens) match
+      case None                          => Right(line)
+      case Some(Left(error))             => Left(error)
+      case Some(Right(opening, closing)) => body(opening, closing)
+      
   def findParens(line: String, functionParens: Boolean): Option[Either[Error, (Int, Int)]] =
-    inline def isFunctionParens(line: String, atIndex: Int): Boolean = atIndex != 0 && !Parser.isOperator(line(atIndex - 1))
+    inline def isFunctionParens(line: String, atIndex: Int): Boolean = atIndex != 0 && !isOperator(line(atIndex - 1))
+    
     val opening = line.indexOf('(')
     if opening == -1 then
       None
@@ -119,9 +104,12 @@ object Preprocessor:
       if counter == 0 then Some(index) else None
 
   def splitByCommas(line: String): List[String] =
-    findNextComma(line) match
-      case None             => List(line)
-      case Some(commaIndex) => line.substring(0, commaIndex) :: splitByCommas(line.substring(commaIndex + 1))
+    if line.isEmpty then
+      Nil
+    else  
+      findNextComma(line) match
+        case None             => List(line)
+        case Some(commaIndex) => line.substring(0, commaIndex) :: splitByCommas(line.substring(commaIndex + 1))
 
   private def findNextComma(line: String): Option[Int] =
     val commaIndex = line.indexOf(',')
