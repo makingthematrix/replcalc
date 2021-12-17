@@ -32,8 +32,15 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
     else if parser.dictionary.contains(functionName) then
       ParsedExpr.error(s"The function already exists: $functionName")
     else
-      val argNames = arguments.split(",").map(_.trim).filter(_.nonEmpty).toSeq
-      val errors   = argNames.collect { case argName if !Dictionary.isValidName(argName) => argName }
+      val argNames =
+        if arguments.nonEmpty then
+          arguments.split(",").map(_.trim).toSeq
+        else
+          Seq.empty
+      val errors = argNames.collect {
+        case argName if argName.isEmpty => "Empty argument name"
+        case argName if !Dictionary.isValidName(argName) => argName
+      }
       if errors.nonEmpty then
         ParsedExpr.error(s"Invalid argument(s): ${errors.mkString(", ")}")
       else
