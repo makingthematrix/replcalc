@@ -20,25 +20,28 @@ object Function extends Parseable[Function]:
       case Right((_, closing)) if closing + 1 < line.length =>
         ParsedExpr.error(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}")
       case Right((opening, closing)) =>
-        val name = line.substring(0, opening)
-        if !Dictionary.isValidName(name) then
-          ParsedExpr.empty
-        else if !parser.dictionary.contains(name) then
-          ParsedExpr.error(s"Function not found: $name")
-        else
-          val args =
-            line
-              .substring(opening + 1, closing)
-              .split(",")
-              .collect { case arg if arg.nonEmpty => arg -> parser.parse(arg) }
-              .toSeq
-          val errors = args.collect {
-            case (argName, None)              => s"Unable to parse argument: $argName"
-            case (argName, Some(Left(error))) => s"Error while evaluating argument $argName: ${error.msg}"
-          }
-          if errors.nonEmpty then
-            ParsedExpr.error(errors.mkString("; "))
-          else
-            val validArgs = args.collect { case (_, Some(Right(expr))) => expr }
-            ParsedExpr(Function(name, validArgs))
+        val name         = line.substring(0, opening)
+        val argumentsStr = line.substring(opening + 1, closing)
+        parseFunction(parser, name, argumentsStr)
     }
+
+  private def parseFunction(parser: Parser, name: String, argumentsStr: String): ParsedExpr[Function] =
+    if !Dictionary.isValidName(name) then
+      ParsedExpr.empty
+    else if !parser.dictionary.contains(name) then
+      ParsedExpr.error(s"Function not found: $name")
+    else
+      val args =
+        argumentsStr
+          .split(",")
+          .collect { case arg if arg.nonEmpty => arg -> parser.parse(arg) }
+          .toSeq
+      val errors = args.collect {
+        case (argName, None)              => s"Unable to parse argument: $argName"
+        case (argName, Some(Left(error))) => s"Error while evaluating argument $argName: ${error.msg}"
+      }
+      if errors.nonEmpty then
+        ParsedExpr.error(errors.mkString("; "))
+      else
+        val validArgs = args.collect { case (_, Some(Right(expr))) => expr }
+        ParsedExpr(Function(name, validArgs))
