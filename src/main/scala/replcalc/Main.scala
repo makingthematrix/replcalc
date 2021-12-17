@@ -18,14 +18,17 @@ def main(args: String*): Unit =
 
 private def list(dictionary: Dictionary): Unit =
   dictionary
-    .allExpressions
+    .expressions
+    .toSeq.sortBy(_._1).map(_._2)
     .map(replForm(dictionary, _))
     .foreach(println)
   
 private def evaluate(parser: Parser, line: String): Option[String] =
   parser.parse(line).map {
-    case Right(expr) => replForm(parser.dictionary, expr)
-    case Left(error) => s"Parsing error: ${error.msg}"
+    case Right(expr) =>
+      replForm(parser.dictionary, expr).tap { _ => parser.dictionary.cleanSpecials() }
+    case Left(error) =>
+      s"Parsing error: ${error.msg}"
   }
 
 private def replForm(dictionary: Dictionary, expression: Expression): String =
