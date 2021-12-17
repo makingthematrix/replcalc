@@ -1,7 +1,7 @@
 package replcalc
 
 import replcalc.expressions.{Constant, Expression, FunctionAssignment, Assignment}
-
+import scala.util.chaining.*
 import scala.io.StdIn.readLine
 
 @main
@@ -11,12 +11,9 @@ def main(args: String*): Unit =
   while !exit do
     print("> ")
     readLine().trim match
-      case ":exit" =>
-        exit = true
-      case ":list" =>
-        list(parser.dictionary)
-      case line =>
-        evaluate(parser, line).foreach(println)
+      case ":exit" => exit = true
+      case ":list" => list(parser.dictionary)
+      case line    => evaluate(parser, line).foreach(println)
 
 private def list(dictionary: Dictionary): Unit =
   dictionary
