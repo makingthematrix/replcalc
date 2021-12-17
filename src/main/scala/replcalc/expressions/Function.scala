@@ -32,13 +32,14 @@ object Function extends Parseable[Function]:
       ParsedExpr.error(s"Function not found: $name")
     else
       val args =
-        arguments
-          .split(",")
-          .collect { case arg if arg.nonEmpty => arg -> parser.parse(arg) }
-          .toSeq
+        if arguments.nonEmpty then
+          arguments.split(",").map { arg => arg -> parser.parse(arg) }.toSeq
+        else
+          Seq.empty
       val errors = args.collect {
-        case (argName, None)              => s"Unable to parse argument: $argName"
-        case (argName, Some(Left(error))) => s"Error while parsing argument $argName: ${error.msg}"
+        case (argName, _) if argName.isEmpty => "Empty argument"
+        case (argName, None)                 => s"Unable to parse argument: $argName"
+        case (argName, Some(Left(error)))    => s"Error while parsing argument $argName: ${error.msg}"
       }
       if errors.nonEmpty then
         ParsedExpr.error(errors.mkString("; "))

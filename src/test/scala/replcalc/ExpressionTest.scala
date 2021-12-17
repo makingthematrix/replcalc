@@ -152,6 +152,7 @@ class ExpressionTest extends munit.FunSuite:
     parse("myFunc(x) = a + x + 2")
     shouldReturnParsingError("myFunc(x) = y")
     shouldReturnParsingError("baz(x)blabla = x")
+    shouldReturnParsingError("boo(x,,y) = x + y")
   }
 
   test("Functions with one argument") {
@@ -174,6 +175,14 @@ class ExpressionTest extends munit.FunSuite:
     eval("foo(foo(1, 2), foo(3, 4))", 10.0)
     parse("bar(x, y, z) = x + y + z")
     eval("1 + bar(foo(2, 1), 3, 4 + foo(5, 1))", 17.0)
+    shouldReturnParsingError("foo(1,,2)")
+  }
+
+  test("Functions with zero arguments") {
+    implicit val parser: Parser = Parser() // the same parser will be used in all evaluations
+    parse("foo() = 1")
+    eval("foo", 1.0)
+    eval("foo()", 1.0)
   }
 
   test("Function using previously defined values") {
