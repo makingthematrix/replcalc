@@ -87,6 +87,7 @@ class PreprocessorTest extends munit.FunSuite:
     shouldFailParens("(1+2)+(")
     shouldFailParens("(1+(2+(3+4)+5)+6")
     shouldFailParens("1+((2+(3+4)+5)+6")
+    shouldFailParens("(1+2)3")
   }
 
   test("Ignore function parentheses") {

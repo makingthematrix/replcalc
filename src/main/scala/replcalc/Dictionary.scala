@@ -3,21 +3,21 @@ package replcalc
 import replcalc.Dictionary.isValidName
 import replcalc.expressions.{Expression, Assignment}
 
-final class Dictionary(private var expressions: Map[String, Expression] = Map.empty,
+final class Dictionary(private var map: Map[String, Expression] = Map.empty,
                        private var specialValuesCounter: Long = 0L):
   def canAssign(name: String): Boolean =
-    expressions.get(name) match
+    map.get(name) match
       case Some(_ : Assignment)      => true
       case None if isValidName(name) => true
       case _                         => false
   
   def add(name: String, expr: Expression): Boolean =
-    expressions.get(name) match
+    map.get(name) match
       case Some(_ : Assignment) =>
-        expressions += name -> expr
+        map += name -> expr
         true
       case None if isValidName(name) =>
-        expressions += name -> expr
+        map += name -> expr
         true
       case _ =>
         false
@@ -25,19 +25,20 @@ final class Dictionary(private var expressions: Map[String, Expression] = Map.em
   def addSpecial(expr: Expression): String =
     specialValuesCounter += 1
     val name = s"$$$specialValuesCounter"
-    expressions += name -> expr
+    map += name -> expr
     name
   
-  inline def get(name: String): Option[Expression] = expressions.get(name)
+  inline def get(name: String): Option[Expression] = map.get(name)
 
-  inline def contains(name: String): Boolean = expressions.contains(name)
+  inline def contains(name: String): Boolean = map.contains(name)
 
-  inline def names: Set[String] = expressions.keySet.filter(_.head != '$')
+  inline def expressions: Map[String, Expression] = map.filter(_._1.head != '$')
 
-  inline def allExpressions: Seq[Expression] = expressions.filter(_._1.head != '$').toSeq.sortBy(_._1).map(_._2)
-
-  def copy(updates: Map[String, Expression]): Dictionary = 
-    Dictionary(expressions ++ updates, specialValuesCounter)
+  inline def specials: Map[String, Expression] = map.filter(_._1.head == '$')
+  
+  def cleanSpecials(): Unit = map = map.view.filterKeys(_.head != '$').toMap
+  
+  def copy(updates: Map[String, Expression]): Dictionary = Dictionary(map ++ updates, specialValuesCounter)
   
 object Dictionary:
   def isValidName(name: String, canBeSpecial: Boolean = false): Boolean =

@@ -23,7 +23,7 @@ class DictionaryTest extends munit.FunSuite:
     val dict = Dictionary()
     dict.add("a", Constant(1.0))
     dict.add("b", Constant(2.0))
-    assertEquals(dict.names, Set("a", "b"))
+    assertEquals(dict.expressions.keySet, Set("a", "b"))
   }
 
   test("Handle an attempt to get an unassigned expression") {
@@ -51,4 +51,14 @@ class DictionaryTest extends munit.FunSuite:
     assert(!Dictionary.isValidName("()"))
     assert(!Dictionary.isValidName(""))
     assert(!Dictionary.isValidName("1a"))
+  }
+
+  test("Create and remove special assignments") {
+    val dict = Dictionary()
+    dict.addSpecial(Constant(1.0))
+    dict.addSpecial(Constant(2.0))
+    dict.addSpecial(Constant(3.0))
+    assertEquals(dict.specials.size, 3)
+    dict.cleanSpecials()
+    assert(dict.specials.isEmpty)
   }

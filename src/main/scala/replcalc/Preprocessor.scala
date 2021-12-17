@@ -46,17 +46,21 @@ final class Preprocessor(parser: Parser,
 
   private def removeParens(line: String): Either[Error, String] =
     withParens(line, functionParens = false) { (opening, closing) =>
-      parser
-        .parse(line.substring(opening + 1, closing))
-        .map {
-          case Left(error) =>
-            Left(error)
-          case Right(expr) =>
-            val pre  = line.substring(0, opening)
-            val name = parser.dictionary.addSpecial(expr)
-            val post = line.substring(closing + 1)
-            removeParens(s"$pre$name$post")
-        }.getOrElse(Left(Error.PreprocessorError(s"Unable to parse: $line")))
+      val pre  = line.substring(0, opening)
+      val post = line.substring(closing + 1)
+      if (pre.nonEmpty && !isOperator(pre.last) && pre.last != '(') ||
+         (post.nonEmpty && !isOperator(post.head) && post.head != ')') then
+        Left(PreprocessorError(s"Unable to parse: $line"))
+      else
+        parser
+          .parse(line.substring(opening + 1, closing))
+          .map {
+            case Left(error) =>
+              Left(error)
+            case Right(expr) =>
+              val name = parser.dictionary.addSpecial(expr)
+              removeParens(s"$pre$name$post")
+          }.getOrElse(Left(PreprocessorError(s"Unable to parse: $line")))
     }
 
 object Preprocessor:
