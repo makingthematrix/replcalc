@@ -37,9 +37,9 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
       if errors.nonEmpty then
         ParsedExpr.error(s"Invalid argument(s): ${errors.mkString(", ")}")
       else
-        val argsMap   = argNames.map(name => name -> Variable(name)).toMap
-        val innerDict = parser.dictionary.copy(argsMap)
-        Parser(innerDict)
+        val argsMap = argNames.map(name => name -> Variable(name)).toMap
+        parser
+          .copy(argsMap)
           .parse(expressionStr)
           .happyPath { expression =>
             FunctionAssignment(functionName, argNames, expression).pipe { assignment =>

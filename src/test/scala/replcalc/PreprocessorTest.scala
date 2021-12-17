@@ -2,12 +2,17 @@ package replcalc
 
 import munit.Location
 import replcalc.Preprocessor.Flags
+import scala.util.chaining.*
 
 class PreprocessorTest extends munit.FunSuite:
   implicit val location: Location = Location.empty
 
-  private def evalParens(line: String, prefix: String = "", suffix: String = "")(implicit parser: Parser = Parser()): Unit =
-    parser.preprocessor.process(line) match
+  private def setup(flags: Flags = Flags.AllFlagsOn): Preprocessor =
+    val parser = new Parser(Dictionary(), None)
+    Preprocessor(parser, flags).tap { parser.setup }
+
+  private def evalParens(line: String, prefix: String = "", suffix: String = "")(implicit pre: Preprocessor = setup()): Unit =
+    pre.process(line) match
       case Left(error) =>
         fail(s"Parsing error: ${error.msg}")
       case Right(result) =>
@@ -22,19 +27,19 @@ class PreprocessorTest extends munit.FunSuite:
           assert(!rightPart.contains(')'))
         assert(result.length > prefix.length + suffix.length)
 
-  private def shouldFailParens(line: String)(implicit parser: Parser = Parser()): Unit =
-    parser.preprocessor.process(line) match
-      case Left(error) =>
+  private def shouldFailParens(line: String)(implicit pre: Preprocessor = setup()): Unit =
+    pre.process(line) match
+      case Left(error)   =>
       case Right(result) => fail(s"Unfortunately this is working just fine: $line")
 
   test("Do nothing if the line does not contain whitespaces") {
-    val pre = Parser().preprocessor
+    val pre =  setup()
     val line = "abcdef"
     assertEquals(pre.process(line), Right(line))
   }
 
   test("Remove whitespaces from the line") {
-    val pre = Parser().preprocessor
+    val pre = setup()
     assertEquals(pre.process("abc def"), Right("abcdef"))
     assertEquals(pre.process(" abc def"), Right("abcdef"))
     assertEquals(pre.process("abc def "), Right("abcdef"))
@@ -42,7 +47,7 @@ class PreprocessorTest extends munit.FunSuite:
   }
 
   test("Replace parentheses with a special value") {
-    implicit val parser: Parser = Parser()
+    implicit val pre: Preprocessor = setup()
     evalParens("1+(2+3)+4", "1+", "+4")
     evalParens("(1+2)")
     evalParens("(1+2)+3", "", "+3")
@@ -50,7 +55,7 @@ class PreprocessorTest extends munit.FunSuite:
   }
 
   test("Parentheses with assignments") {
-    implicit val parser: Parser = Parser()
+    implicit val pre: Preprocessor = setup()
     evalParens("a = 1 + (2 + 3) + 4", "a=1+", "+4")
     evalParens("b = (1 + 2)")
     evalParens("c = (1 + 2) + 3", "c=", "+3")
@@ -59,7 +64,7 @@ class PreprocessorTest extends munit.FunSuite:
   }
 
   test("Handle more than one set of parentheses") {
-    implicit val parser: Parser = Parser()
+    implicit val pre: Preprocessor = setup()
     evalParens("1+(2+3)+(4+5)+6", "1+", "+6")
     evalParens("(1+2)+3+(4+5)")
     evalParens("(1+2)+(4+5)")
@@ -69,14 +74,14 @@ class PreprocessorTest extends munit.FunSuite:
   }
 
   test("Handle nested parentheses") {
-    implicit val parser: Parser = Parser()
+    implicit val pre: Preprocessor = setup()
     evalParens("1+(2+(3+4)+5)+6", "1+", "+6")
     evalParens("(1+(2+(3+4)+5))+6", "", "+6")
     evalParens("1+((2+(3+4)+5)+6)", "1+", "")
   }
 
   test("Handle unclosed paretheses") {
-    implicit val parser: Parser = Parser()
+    implicit val pre: Preprocessor = setup()
     shouldFailParens("(")
     shouldFailParens("((")
     shouldFailParens("(1+2)+(")
@@ -85,7 +90,7 @@ class PreprocessorTest extends munit.FunSuite:
   }
 
   test("Ignore function parentheses") {
-    val pre = Parser(preprocessorFlags = Flags(wrapFunctionArguments = false)).preprocessor
+    val pre = setup(Flags(wrapFunctionArguments = false))
 
     assertEquals(pre.process("foo(1)"), Right("foo(1)"))
     assertEquals(pre.process("foo(1)+1"), Right("foo(1)+1"))
@@ -121,7 +126,7 @@ class PreprocessorTest extends munit.FunSuite:
   }
 
   test("Wrap parentheses around function arguments") {
-    val pre = Parser(preprocessorFlags = Flags(removeParens = false)).preprocessor
+    val pre = setup(Flags(removeParens = false))
     assertEquals(pre.process("foo(4)"), Right("foo(4)"))
     assertEquals(pre.process("foo(4+5)"), Right("foo((4+5))"))
     assertEquals(pre.process("foo(4,5)"), Right("foo(4,5)"))

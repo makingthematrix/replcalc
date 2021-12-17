@@ -7,7 +7,8 @@ import replcalc.Parser.isOperator
 
 import scala.annotation.tailrec
 
-final class Preprocessor(parser: Parser, flags: Flags = Flags.AllFlagsOn):
+final class Preprocessor(parser: Parser,
+                         flags: Flags = Flags.AllFlagsOn):
   import Preprocessor.*
   
   def process(line: String): Either[Error, String] =
