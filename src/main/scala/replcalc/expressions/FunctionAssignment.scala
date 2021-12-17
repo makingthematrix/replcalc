@@ -17,6 +17,8 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
       Preprocessor.findParens(assignmentStr, functionParens = true).flatMap {
         case Left(error) =>
           ParsedExpr.error(error)
+        case Right((_, closing)) if closing + 1 < assignmentStr.length =>
+          ParsedExpr.error(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}")
         case Right((opening, closing)) =>
           val functionName  = assignmentStr.substring(0, opening)
           val arguments     = assignmentStr.substring(opening + 1, closing)

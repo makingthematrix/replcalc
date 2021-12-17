@@ -164,6 +164,7 @@ class ExpressionTest extends munit.FunSuite:
     parse("a = 3")
     parse("myFunc(x) = a + x + 2")
     shouldReturnParsingError("myFunc(x) = y")
+    shouldReturnParsingError("baz(x)blabla = x")
   }
 
   test("Functions with one argument") {

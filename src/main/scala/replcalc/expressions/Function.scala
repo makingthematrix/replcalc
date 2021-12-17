@@ -17,14 +17,14 @@ object Function extends Parseable[Function]:
     Preprocessor.findParens(line, functionParens = true).flatMap {
       case Left(error) =>
         ParsedExpr.error(error)
+      case Right((_, closing)) if closing + 1 < line.length =>
+        ParsedExpr.error(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}")
       case Right((opening, closing)) =>
         val name = line.substring(0, opening)
         if !Dictionary.isValidName(name) then
           ParsedExpr.empty
         else if !parser.dictionary.contains(name) then
           ParsedExpr.error(s"Function not found: $name")
-        else if closing + 1 < line.length then
-          ParsedExpr.error(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}")
         else
           val args =
             line
