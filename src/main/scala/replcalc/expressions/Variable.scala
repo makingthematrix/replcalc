@@ -4,10 +4,10 @@ import Error.{ParsingError, EvaluationError}
 import replcalc.{Dictionary, Parser}
 
 final case class Variable(name: String) extends Expression:
-  override def evaluate(dict: Dictionary): Either[Error, Double] =
+  override protected def evaluate(dict: Dictionary): Either[Error, Double] =
     dict
       .get(name)
-      .map(_.evaluate(dict))
+      .map(_.run(dict))
       .getOrElse(Left(EvaluationError(s"Variable not found: $name")))
   
 object Variable extends Parseable[Variable]:

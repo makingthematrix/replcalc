@@ -14,7 +14,7 @@ def main(args: String*): Unit =
       case ":exit"              => exit = true
       case ":list"              => list(parser.dictionary)
       case line if line.isEmpty =>
-      case line                 => evaluate(parser, line).foreach(println)
+      case line                 => run(parser, line).foreach(println)
 
 private def list(dictionary: Dictionary): Unit =
   dictionary
@@ -23,7 +23,7 @@ private def list(dictionary: Dictionary): Unit =
     .map(replForm(dictionary, _))
     .foreach(println)
   
-private def evaluate(parser: Parser, line: String): Option[String] =
+private def run(parser: Parser, line: String): Option[String] =
   parser.parse(line).map {
     case Right(expr) =>
       replForm(parser.dictionary, expr).tap { _ => parser.dictionary.cleanSpecials() }
@@ -38,6 +38,6 @@ private def replForm(dictionary: Dictionary, expression: Expression): String =
     case Assignment(name, Constant(number)) =>
       s"$name -> $number"
     case expr =>
-      expr.evaluate(dictionary) match
+      expr.run(dictionary) match
         case Right(result) => result.toString
         case Left(error)   => s"Evaluation error: ${error.msg}"

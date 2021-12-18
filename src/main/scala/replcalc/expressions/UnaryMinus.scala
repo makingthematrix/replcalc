@@ -4,7 +4,7 @@ import Error.ParsingError
 import replcalc.{Dictionary, Parser, expressions}
 
 final case class UnaryMinus(innerExpr: Expression) extends Expression:
-  override def evaluate(dict: Dictionary): Either[Error, Double] = innerExpr.evaluate(dict).map(-_)
+  override protected def evaluate(dict: Dictionary): Either[Error, Double] = innerExpr.run(dict).map(-_)
   
 object UnaryMinus extends Parseable[UnaryMinus]:
   override def parse(parser: Parser, line: String): ParsedExpr[UnaryMinus] =
