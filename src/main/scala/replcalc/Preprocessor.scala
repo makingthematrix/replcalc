@@ -7,8 +7,11 @@ import replcalc.Parser.isOperator
 
 import scala.annotation.tailrec
 
-final class Preprocessor(parser: Parser,
-                         flags: Flags = Flags.AllFlagsOn):
+trait Preprocessor {
+  def process(line: String): Either[Error, String]
+}
+
+final class PreprocessorImpl(private val parser: Parser, private val flags: Flags) extends Preprocessor:
   import Preprocessor.*
   
   def process(line: String): Either[Error, String] =
@@ -48,8 +51,8 @@ final class Preprocessor(parser: Parser,
     withParens(line, functionParens = false) { (opening, closing) =>
       val pre  = line.substring(0, opening)
       val post = line.substring(closing + 1)
-      if (pre.nonEmpty && !isOperator(pre.last) && pre.last != '(') ||
-         (post.nonEmpty && !isOperator(post.head) && post.head != ')') then
+      if (pre.nonEmpty && !isOperator(pre.last, '(')) ||
+         (post.nonEmpty && !isOperator(post.head, ')')) then
         Left(PreprocessorError(s"Unable to parse: $line"))
       else
         parser
@@ -71,6 +74,9 @@ object Preprocessor:
   object Flags:
     val AllFlagsOn: Flags = Flags()
 
+  def apply(parser: Parser, flags: Flags = Flags.AllFlagsOn): Preprocessor =
+    new PreprocessorImpl(parser, flags)
+  
   def withParens(line: String, functionParens: Boolean)(body: (Int, Int) => Either[Error, String]): Either[Error, String] =
     findParens(line, functionParens) match
       case None                          => Right(line)

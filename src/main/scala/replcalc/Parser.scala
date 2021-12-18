@@ -4,13 +4,25 @@ import replcalc.Preprocessor.Flags
 import replcalc.expressions.*
 import scala.util.chaining.*
 
-final class Parser(val dictionary: Dictionary, private var preprocessor: Option[Preprocessor]):
+trait Parser {
+  val dictionary: Dictionary
+  def setup(preprocessor: Preprocessor): Unit
+  def copy(updates: Map[String, Expression]): Parser
+  def parse(line: String): ParsedExpr[Expression]
+}
+
+final class ParserImpl(override val dictionary: Dictionary, 
+                       private var preprocessor: Option[Preprocessor]) extends Parser:
   self =>
   import Parser.*
+  
+  override def setup(preprocessor: Preprocessor): Unit =
+    this.preprocessor = Some(preprocessor)
 
-  def copy(updates: Map[String, Expression]): Parser = Parser(dictionary.copy(updates))
+  override def copy(updates: Map[String, Expression]): Parser = 
+    Parser(dictionary.copy(updates))
 
-  def parse(line: String): ParsedExpr[Expression] =
+  override def parse(line: String): ParsedExpr[Expression] =
     preprocess(line) match
       case Left(error) =>
         Some(Left(error))
@@ -20,9 +32,6 @@ final class Parser(val dictionary: Dictionary, private var preprocessor: Option[
           def unapply(stage: (Parser, String) => ParsedExpr[Expression]): ParsedExpr[Expression] = stage(self, processed)
         stages.collectFirst { case Parsed(expr) => expr }
 
-  def setup(preprocessor: Preprocessor): Unit =
-    this.preprocessor = Some(preprocessor)
-
   private def preprocess(line: String): Either[Error, String] =
     preprocessor match
       case Some(pre) => pre.process(line)
@@ -30,15 +39,16 @@ final class Parser(val dictionary: Dictionary, private var preprocessor: Option[
 
 object Parser:
   def apply(dictionary: Dictionary = Dictionary()): Parser =
-    new Parser(dictionary, None).tap { parser =>
+    new ParserImpl(dictionary, None).tap { parser =>
       parser.setup(Preprocessor(parser))
     }
 
-  inline def isOperator(char: Char): Boolean = operators.contains(char)
+  def isOperator(char: Char, additionalAllowed: Char*): Boolean = 
+    operators.contains(char) || additionalAllowed.contains(char)
 
-  private val operators: Set[Char] = Set('+', '-', '*', '/', ',')
+  val operators: Set[Char] = Set('+', '-', '*', '/', ',')
 
-  private val stages: Seq[(Parser, String) => ParsedExpr[Expression]] =
+  val stages: Seq[(Parser, String) => ParsedExpr[Expression]] =
     Seq(
       FunctionAssignment.parse,
       Assignment.parse,
