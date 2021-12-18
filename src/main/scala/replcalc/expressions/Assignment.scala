@@ -5,7 +5,7 @@ import replcalc.{Dictionary, Parser}
 import scala.util.chaining.*
 
 final case class Assignment(name: String, constant: Constant) extends Expression:
-  override def evaluate(dict: Dictionary): Either[Error, Double] = constant.evaluate(dict)
+  override protected def evaluate(dict: Dictionary): Either[Error, Double] = constant.run(dict)
 
 object Assignment extends Parseable[Assignment]:
   override def parse(parser: Parser, line: String): ParsedExpr[Assignment] =
@@ -24,7 +24,7 @@ object Assignment extends Parseable[Assignment]:
       parser
         .parse(expressionStr)
         .happyPath {
-          _.evaluate(parser.dictionary).map { number =>
+          _.run(parser.dictionary).map { number =>
             Assignment(name, Constant(number)).tap(parser.dictionary.add(name, _))
           }.pipe(Some(_))
         }

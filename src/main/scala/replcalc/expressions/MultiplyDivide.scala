@@ -2,18 +2,19 @@ package replcalc.expressions
 
 import Error.*
 import replcalc.{Dictionary, Parser}
+import Expression.isZero
 
 final case class MultiplyDivide(left: Expression, right: Expression, isDivision: Boolean = false) extends Expression:
-  override def evaluate(dict: Dictionary): Either[Error, Double] =
+  override protected def evaluate(dict: Dictionary): Either[Error, Double] =
     val innerResults =
       for
-        lResult <- left.evaluate(dict)
-        rResult <- right.evaluate(dict)
+        lResult <- left.run(dict)
+        rResult <- right.run(dict)
       yield (lResult, rResult)
     innerResults.flatMap {
-      case (l, r) if isDivision && r == 0.0 => Left(EvaluationError(s"Division by zero: $l / $r"))
-      case (l, r) if isDivision             => Right(l / r)
-      case (l, r)                           => Right(l * r)
+      case (l, r) if isDivision && isZero(r) => Left(EvaluationError(s"Division by zero: $l / $r"))
+      case (l, r) if isDivision              => Right(l / r)
+      case (l, r)                            => Right(l * r)
     }
 
 object MultiplyDivide extends Parseable[MultiplyDivide]:
@@ -34,3 +35,4 @@ object MultiplyDivide extends Parseable[MultiplyDivide]:
         case (_, Left(error))     => Left(error)
         case (Right(l), Right(r)) => Right(MultiplyDivide(l, r, isDivision))
       }
+

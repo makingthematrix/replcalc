@@ -4,11 +4,11 @@ import replcalc.{Dictionary, Parser, Preprocessor}
 import replcalc.expressions.Error.{EvaluationError, ParsingError}
 
 final case class Function(name: String, args: Seq[Expression]) extends Expression:
-  override def evaluate(dict: Dictionary): Either[Error, Double] =
+  override protected def evaluate(dict: Dictionary): Either[Error, Double] =
     dict.get(name) match
       case Some(f: FunctionAssignment) if f.argNames.length == args.length =>
         val argMap = f.argNames.zip(args).toMap
-        f.evaluate(dict.copy(argMap))
+        f.run(dict.copy(argMap))
       case _ =>
         Left(EvaluationError(s"Function not found: $name"))
 

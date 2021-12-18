@@ -6,10 +6,10 @@ import replcalc.{Dictionary, Parser}
 import replcalc.Parser.isOperator
 
 final case class AddSubstract(left: Expression, right: Expression, isSubstraction: Boolean = false) extends Expression:
-  override def evaluate(dict: Dictionary): Either[Error, Double] =
+  override protected def evaluate(dict: Dictionary): Either[Error, Double] =
     for
-      lResult <- left.evaluate(dict)
-      rResult <- right.evaluate(dict)
+      lResult <- left.run(dict)
+      rResult <- right.run(dict)
     yield
       if isSubstraction then 
         lResult - rResult 

@@ -5,7 +5,7 @@ import replcalc.{Dictionary, Parser, Preprocessor}
 import scala.util.chaining.*
 
 final case class FunctionAssignment(name: String, argNames: Seq[String], expr: Expression) extends Expression:
-  override def evaluate(dict: Dictionary): Either[Error, Double] = expr.evaluate(dict)
+  override protected def evaluate(dict: Dictionary): Either[Error, Double] = expr.run(dict)
 
 object FunctionAssignment extends Parseable[FunctionAssignment]:
   override def parse(parser: Parser, line: String): ParsedExpr[FunctionAssignment] =

@@ -13,7 +13,7 @@ class ExpressionTest extends munit.FunSuite:
       case Some(Left(error)) => 
         failComparison(s"Error: ${error.msg}", str, expected)
       case Some(Right(expr)) =>
-        expr.evaluate(parser.dictionary) match
+        expr.run(parser.dictionary) match
           case Right(result) => assertEqualsDouble(result, expected, delta)
           case Left(error)   => failComparison(s"Error: ${error.msg}", str, expected)
 
@@ -66,6 +66,10 @@ class ExpressionTest extends munit.FunSuite:
     eval("3/2/2", 0.75)
     eval("1.0/2.0", 0.5)
     intercept[ComparisonFailException](eval("1/0", Double.NaN))
+  }
+
+  test("Round to zero") {
+    eval("(1/3)*3-1/3-1/3-1/3", 0.0)
   }
 
   test("Multiply and Divide") {
