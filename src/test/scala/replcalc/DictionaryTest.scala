@@ -55,7 +55,7 @@ class DictionaryTest extends munit.FunSuite:
     assert(!Dictionary.isValidName("__"))
   }
 
-  test("Create and remove special assignments") {
+  test("Create special assignments") {
     val dict = Dictionary()
     dict.addSpecial(Constant(1.0))
     dict.addSpecial(Constant(2.0))

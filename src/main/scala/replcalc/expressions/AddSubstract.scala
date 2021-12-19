@@ -1,9 +1,24 @@
 package replcalc.expressions
 
 import scala.annotation.tailrec
-import Error.ParsingError
 import replcalc.{Dictionary, Parser}
 import replcalc.Parser.isOperator
+
+/**
+ * AddSubstract
+ *
+ * Addition and substraction are grouped together under one expression type. If the expression has more than just one
+ * "+" or "-" operator, they are parsed from right to left to preserve the proper order of operations. So "1 - 2 + 3"
+ * will be parsed as "(1 - 2) + 3" - the "+" will be parsed first, and then "1 - 2" will be treated as a nested expression.
+ *
+ * One special operation needed here is that in search for the "-" operator the program needs to distinguish between
+ * the binary and the unary "-". This is done by looking at the previous character. If it's an operator, we use 
+ * recursion (tailrec, this time) to search for another "-" more to the left of the one we have just found.
+ * 
+ * @param left The expression parsed from the text left to the operator
+ * @param right The expression parsed from the text right to the operator
+ * @param isSubstraction true if the operator is '-', false if the operator is '+'
+ */
 
 final case class AddSubstract(left: Expression, right: Expression, isSubstraction: Boolean = false) extends Expression:
   override protected def evaluate(dict: Dictionary): Either[Error, Double] =
