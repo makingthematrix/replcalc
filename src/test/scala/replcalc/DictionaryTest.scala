@@ -51,6 +51,8 @@ class DictionaryTest extends munit.FunSuite:
     assert(!Dictionary.isValidName("()"))
     assert(!Dictionary.isValidName(""))
     assert(!Dictionary.isValidName("1a"))
+    assert(!Dictionary.isValidName("_"))
+    assert(!Dictionary.isValidName("__"))
   }
 
   test("Create and remove special assignments") {
@@ -59,6 +61,6 @@ class DictionaryTest extends munit.FunSuite:
     dict.addSpecial(Constant(2.0))
     dict.addSpecial(Constant(3.0))
     assertEquals(dict.specials.size, 3)
-    dict.cleanSpecials()
+    dict.clean()
     assert(dict.specials.isEmpty)
   }

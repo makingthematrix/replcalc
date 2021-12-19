@@ -38,9 +38,11 @@ final class ParserImpl(override val dictionary: Dictionary,
       case None      => Left(Error.PreprocessorError("The preprocessor is not set up"))
 
 object Parser:
-  def apply(dictionary: Dictionary = Dictionary()): Parser =
+  def apply(dictionary: Dictionary = Dictionary(), flags: Flags = Flags.AllFlagsOn): Parser =
     new ParserImpl(dictionary, None).tap { parser =>
-      parser.setup(Preprocessor(parser))
+      val preprocessor = Preprocessor(flags = flags)
+      parser.setup(preprocessor)
+      preprocessor.setup(parser)
     }
 
   def isOperator(char: Char, additionalAllowed: Char*): Boolean = 
