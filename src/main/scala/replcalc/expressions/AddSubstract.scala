@@ -1,8 +1,9 @@
 package replcalc.expressions
 
-import scala.annotation.tailrec
 import replcalc.{Dictionary, Parser}
 import replcalc.Parser.isOperator
+
+import scala.annotation.tailrec
 
 /**
  * AddSubstract

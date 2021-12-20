@@ -1,6 +1,5 @@
 package replcalc.expressions
 
-import Error.ParsingError
 import replcalc.{Dictionary, Parser}
 
 /**

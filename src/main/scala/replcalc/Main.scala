@@ -24,7 +24,6 @@ package replcalc
  */
 
 import replcalc.expressions.{Constant, Expression, FunctionAssignment, Assignment}
-import replcalc.expressions.Error.{ParsingError, PreprocessorError, EvaluationError}
 import scala.util.chaining.*
 import scala.io.StdIn.readLine
 

@@ -3,6 +3,7 @@ package replcalc.expressions
 import replcalc.{Dictionary, ParsedFunction, Parser, Preprocessor}
 import replcalc.ParsedFunction.LineSide
 import replcalc.Dictionary.isValidName
+
 import scala.util.chaining.*
 
 /**

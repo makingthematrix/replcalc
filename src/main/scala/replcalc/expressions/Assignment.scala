@@ -1,7 +1,7 @@
 package replcalc.expressions
 
-import Error.*
 import replcalc.{Dictionary, Parser}
+
 import scala.util.chaining.*
 
 /**

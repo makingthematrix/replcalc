@@ -1,6 +1,6 @@
 package replcalc.expressions
 
-import Error.{ParsingError, EvaluationError}
+import Error.EvaluationError
 import replcalc.{Dictionary, Parser}
 
 /**
