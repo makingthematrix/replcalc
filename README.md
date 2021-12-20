@@ -39,4 +39,6 @@ If you want to exit the program, type `:exit`. (Note the `:` sign).
 
 ### Other notes
 
-Apart from playing with the calculator, you can look through the history of pull requests, the tickets on the GitHub Projects page, and also through comments in the headers of each file, and read all about the process I used and what was I thinking while working on it. You will see how I introduced each feature, but also how I made some changes that were later removed, how I found and fixed bugs, etc. 
+Apart from playing with the calculator, you can look through the history of pull requests, the tickets on the GitHub Projects page, and also through comments in the headers of each file, and read all about the process I used and what was I thinking while working on it. You will see how I introduced each feature, but also how I made some changes that were later removed, how I found and fixed bugs, etc. In short, this project shows how I like to work if I have enough time for all the things we usually neglect a bit in our programming work - unit tests, documentation, and so on.
+
+Enjoy!
