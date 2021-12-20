@@ -9,7 +9,7 @@ package replcalc.expressions
  * and eithers can be verbose, and I wanted to put this verbosity a bit to the side, so that the logic of the given
  * type expression can focus on the "happy path", i.e. what should be done if we have a valid expression.
  * So I created a type alias `ParsedExpr[T]` and a few utility methods that take care of errors and the "None" outcome.
- * It's a perfect solution. There are specific cases of errors which the expression type logic has to handle, and also
+ * It's not perfect - there are specific cases of errors which the expression type logic has to handle, and also
  * I sometimes take advantage of that I'm working with `Option` and/or `Either` (that's why it's not an opaque type).
  * But I experimented a bit with two others possibilities - one with an enum, the other with a case class - and I think
  * this one works the best of all three.

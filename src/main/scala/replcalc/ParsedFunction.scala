@@ -3,7 +3,8 @@ package replcalc
 import replcalc.Dictionary.isValidName
 import replcalc.expressions.Error
 import replcalc.expressions.Error.ParsingError
-import replcalc.Preprocessor.{findParens, splitByCommas}
+
+import scala.annotation.tailrec
 
 /**
  * Parsed function
@@ -30,7 +31,7 @@ object ParsedFunction:
     case Right
 
   def parse(line: String, lineSide: LineSide): Option[Either[Error, ParsedFunction]] =
-    findParens(line, functionParens = true).map {
+    Preprocessor.findParens(line, functionParens = true).map {
       case Left(error) =>
         Left(error)
       case Right((_, closing)) if closing + 1 < line.length =>
@@ -51,3 +52,28 @@ object ParsedFunction:
           else
             Right(ParsedFunction(name, arguments))
     }
+
+  def splitByCommas(line: String): List[String] = splitByCommas(line, Nil)
+
+  @tailrec
+  private def splitByCommas(line: String, acc: List[String]): List[String] =
+    if line.isEmpty then
+      acc
+    else
+      findNextComma(line) match
+        case None             => acc :+ line
+        case Some(commaIndex) => splitByCommas(line.substring(commaIndex + 1), acc :+ line.substring(0, commaIndex))
+  
+  private def findNextComma(line: String): Option[Int] =
+    val index = line.indexOf(',')
+    if index == -1 then
+      None
+    else if index == 0 then
+      Some(0)
+    else
+      Preprocessor.findParens(line, true) match
+        case None                                         => Some(index)
+        case Some(Left(error))                            => None
+        case Some(Right((opening, _))) if index < opening => Some(index)
+        case Some(Right((_, closing))) if index > closing => Some(index)
+        case Some(Right((_, closing)))                    => findNextComma(line.substring(closing + 1)).map(_ + closing + 1)

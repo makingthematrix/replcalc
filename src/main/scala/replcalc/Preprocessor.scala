@@ -80,7 +80,7 @@ object Preprocessor:
     withParens(line, functionParens = true) { (opening, closing) =>
       val inside = line.substring(opening + 1, closing)
       val arguments =
-        splitByCommas(inside).map {
+        ParsedFunction.splitByCommas(inside).map {
           case arg if arg.forall(!isOperator(_)) && findParens(arg, functionParens = true).isEmpty =>
             Right(arg)
           case arg =>
@@ -185,26 +185,3 @@ object Preprocessor:
         case ((index, counter), _)                   => (index + 1, counter)
       }
       if counter == 0 then Some(index) else None
-
-  @tailrec
-  def splitByCommas(line: String, acc: List[String] = Nil): List[String] =
-    if line.isEmpty then
-      acc
-    else
-      findNextComma(line) match
-        case None             => acc :+ line
-        case Some(commaIndex) => splitByCommas(line.substring(commaIndex + 1), acc :+ line.substring(0, commaIndex))
-
-  private def findNextComma(line: String): Option[Int] =
-    val index = line.indexOf(',')
-    if index == -1 then
-      None
-    else if index == 0 then
-      Some(0)
-    else
-      findParens(line, true) match
-        case None                                         => Some(index)
-        case Some(Left(error))                            => None
-        case Some(Right((opening, _))) if index < opening => Some(index)
-        case Some(Right((_, closing))) if index > closing => Some(index)
-        case Some(Right((_, closing)))                    => findNextComma(line.substring(closing + 1)).map(_ + closing + 1)
