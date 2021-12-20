@@ -1,6 +1,7 @@
 package replcalc
 
 import replcalc.expressions.{Constant, Expression, FunctionAssignment, Assignment}
+import replcalc.expressions.Error.{ParsingError, PreprocessorError, EvaluationError}
 import scala.util.chaining.*
 import scala.io.StdIn.readLine
 
@@ -22,12 +23,14 @@ private def list(dictionary: Dictionary): Unit =
     .toSeq.sortBy(_._1).map(_._2)
     .map(replForm(dictionary, _))
     .foreach(println)
-  
+
 private def run(parser: Parser, line: String): Option[String] =
-  parser.parse(line).map {
-    case Right(expr) => replForm(parser.dictionary, expr)
-    case Left(error) => s"Parsing error: ${error.msg}"
-  }
+  parser
+    .parse(line)
+    .map {
+      case Right(expr) => replForm(parser.dictionary, expr)
+      case Left(error) => error.toString
+    }
 
 private def replForm(dictionary: Dictionary, expression: Expression): String =
   expression match
@@ -38,4 +41,4 @@ private def replForm(dictionary: Dictionary, expression: Expression): String =
     case expr =>
       expr.run(dictionary) match
         case Right(result) => result.toString
-        case Left(error)   => s"Evaluation error: ${error.msg}"
+        case Left(error)   => error.toString
