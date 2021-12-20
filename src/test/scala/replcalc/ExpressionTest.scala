@@ -206,3 +206,11 @@ class ExpressionTest extends munit.FunSuite:
     eval("foo(2)", 3.0)
     eval("x", 1.0)
   }
+
+  test("A more complicated example") {
+    implicit val parser: Parser = Parser() // the same parser will be used in all evaluations
+    parse("foo(x, y)= x + y")
+    parse("bar(z) = foo(z, z)")
+    parse("sho(a, b, c) = (foo(a, bar(foo(b, c)) + 3) / 2) * foo(2, a)")
+    eval("sho(1, 2, 3)", 21.0)
+  }
