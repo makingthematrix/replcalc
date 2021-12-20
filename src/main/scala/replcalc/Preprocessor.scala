@@ -1,11 +1,37 @@
 package replcalc
 
+/**
+ * Preprocessor
+ *
+ * The preprocessor is used to run checks and to simplify the text form of the expression before the parser will try
+ * to turn it into an AST. The simplest example of its work is that it removes whitespaces - while parsing we often
+ * have to look for the closest previous or next characters and not having to worry about skipping over whitespaces can
+ * simplify the logic quite a bit.
+ * In the case of this project, the preprocessor has also two other tasks: making sure that the arguments of the function
+ * can be handled properly (e.g. parsing `foo(a * (b + c), d + e)` should properly parse the expressions in the arguments
+ * and then pass those parsed expressions as arguments of the function), and turning expressions inside parentheses into
+ * special, temporary variables (e.g. `1 + (2 + 3) * 4` will be turned into `1+$1*4` where `$1` holds the parsed
+ * expression of `2+3`). In fact, the first task is done by wrapping function arguments in parentheses, so then they 
+ * can be turned into special variables by the second task. 
+ *
+ * Each preprocessor task can be turned on or off by a flag. I use the flags mainly for unit tests, but in a bit more
+ * complicated version of this project I might, for example, turn off removing whitespaces for any inner call to
+ * the preprocessor. Removing whitespaces works once for the whole line of text. If we have nested expressions in it
+ * and the preprocessor is going to be called on them, we know for sure that whitespaces were already removed.
+ *
+ * About recursion:
+ * Methods in this class use recursion to move around the line of text and, for example, perform the same task of
+ * turning an expression inside parentheses into a special variable, but for an even more nested pair of parentheses.
+ * I made one of them tail-recursive but decided not to do it with others since the code here works with one line of
+ * text at the time - usually a quite short short line - so using non-tail-recursive methods is safe and the code looks
+ * more readable. In the one case where I used tail-recursion (`splitByCommas`) it was very straightforward.
+ */
+
 import replcalc.Preprocessor.Flags
 import replcalc.expressions.{Error, FunctionAssignment, Variable}
 import replcalc.expressions.Error.{ParsingError, PreprocessorError}
 import replcalc.Parser.isOperator
 import replcalc.Dictionary.isValidName
-import replcalc.ParsedFunction
 import replcalc.ParsedFunction.LineSide
 
 import scala.annotation.tailrec
@@ -71,13 +97,30 @@ object Preprocessor:
         }
     }
 
+  /**
+   * There is no expression type for parentheses. Instead, parentheses are turned into special variables.
+   * Each pair of parentheses is parsed as an individual, smaller expression, added to the dictionary under a special
+   * name, and then it's replaced in the original like by that special name. For example "1 + (2 + 3) + 4" becomes
+   * "1 + $1 + 4" where "$1" is the name of the variable. In the dictionary we now have an expression "2 + 3" under
+   * this name. When evaluated, the variable "$1" will be replaced with the result of "2 + 3" and used to evaluate
+   * the rest of the higher-level expression.
+   *
+   * Look here for a comment about how it works with function arguments: https://github.com/makingthematrix/replcalc/pull/47
+   *
+   * @param originalParser The main parser of the preprocessor. It's called "original" because the method may create
+   *                       a copy of it and update it with function arguments.
+   * @param left If the original line is a function assignment, the method needs to know its arguments, specified on 
+   *             the left side, to be able to process the expression on the right side. 
+   * @param right The expression in the text form
+   * @return The expression with parentheses turned into special variables
+   */
   def removeParens(originalParser: Parser, left: String, right: String): Either[Error, String] =
     def remove(parser: Parser, line: String): Either[Error, String] =
       withParens(line, functionParens = false) { (opening, closing) =>
         val pre  = line.substring(0, opening)
         val post = line.substring(closing + 1)
         if (pre.nonEmpty && !isOperator(pre.last, '(')) || (post.nonEmpty && !isOperator(post.head, ')')) then
-          Left(PreprocessorError(s"Unable to parse: $line"))
+          Left(PreprocessorError(s"Invalid characters around the function: $line"))
         else
           parser
             .parse(line.substring(opening + 1, closing))
@@ -153,15 +196,15 @@ object Preprocessor:
         case Some(commaIndex) => splitByCommas(line.substring(commaIndex + 1), acc :+ line.substring(0, commaIndex))
 
   private def findNextComma(line: String): Option[Int] =
-    val commaIndex = line.indexOf(',')
-    if commaIndex == -1 then
+    val index = line.indexOf(',')
+    if index == -1 then
       None
-    else if commaIndex == 0 then
+    else if index == 0 then
       Some(0)
     else
       findParens(line, true) match
-        case None                                              => Some(commaIndex)
-        case Some(Left(error))                                 => None
-        case Some(Right((opening, _))) if commaIndex < opening => Some(commaIndex)
-        case Some(Right((_, closing))) if commaIndex > closing => Some(commaIndex)
-        case Some(Right((_, closing)))                         => findNextComma(line.substring(closing + 1)).map(_ + closing + 1)
+        case None                                         => Some(index)
+        case Some(Left(error))                            => None
+        case Some(Right((opening, _))) if index < opening => Some(index)
+        case Some(Right((_, closing))) if index > closing => Some(index)
+        case Some(Right((_, closing)))                    => findNextComma(line.substring(closing + 1)).map(_ + closing + 1)

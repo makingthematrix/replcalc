@@ -1,5 +1,21 @@
 package replcalc
 
+/**
+ * Dictionary
+ *
+ * The dictionary holds variables and functions in their already parsed forms, i.e. as expressions with associated names.
+ * It's basically a wrapper over a map of String -> Expression, but with some additional functionality:
+ * 1. Before adding a new entry, the dictionary checks if the name is valid. The name has to start with a letter or
+ *    an underscore (or '$' but only if it's a special variable), all next characters have to be letters, numbers, or
+ *    underscores, and at least one character has to be NOT an underscore.
+ * 2. It can create special expressions with unique names. This is used by the preprocessor for turning nested
+ *    expressions inside parentheses into special variables.
+ * 3. It can create its own copy updated with additional entries. This is used to first parse function assignments
+ *    and then to evaluate functions - each function can contain other functions and each time we go a step down,
+ *    we need to add arguments as variables to the dictionary we use, but when we go up again, we shouldn't be able
+ *    to use those variables anymore.
+ */
+
 import replcalc.Dictionary.isValidName
 import replcalc.expressions.{Expression, Assignment}
 

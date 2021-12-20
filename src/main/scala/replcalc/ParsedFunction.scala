@@ -5,6 +5,23 @@ import replcalc.expressions.Error
 import replcalc.expressions.Error.ParsingError
 import replcalc.Preprocessor.{findParens, splitByCommas}
 
+/**
+ * Parsed function
+ *
+ * A small utility class for help in parsing a function or a function assignment out of a text chunk.
+ * If the text is of the form `name(arg1, arg2, ...)`, the parsed function will keep the name and the list of
+ * arguments. I will also properly return a `None` if the text doesn't seem to be a function (i.e. it does not have
+ * parentheses) and it will return an error if it seems to be a function, but it can't be parsed.
+ *
+ * It's possible to use this class both for a function assignment and a function used in an expression, given that
+ * the arguments are already wrapped in parentheses, so we know which commas denote the arguments of the given function
+ * and which belong to nested functions.
+ *
+ * @param name A valid function name
+ * @param arguments A sequence of valid arguments names or expressions in the text form, depending on whether an assignment
+ *                  or an expression was parsed. Might be empty.
+ */
+
 final case class ParsedFunction(name: String, arguments: Seq[String])
 
 object ParsedFunction:
@@ -34,4 +51,3 @@ object ParsedFunction:
           else
             Right(ParsedFunction(name, arguments))
     }
-
