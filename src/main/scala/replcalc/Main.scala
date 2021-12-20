@@ -25,10 +25,8 @@ private def list(dictionary: Dictionary): Unit =
   
 private def run(parser: Parser, line: String): Option[String] =
   parser.parse(line).map {
-    case Right(expr) =>
-      replForm(parser.dictionary, expr).tap { _ => parser.dictionary.clean() }
-    case Left(error) =>
-      s"Parsing error: ${error.msg}"
+    case Right(expr) => replForm(parser.dictionary, expr)
+    case Left(error) => s"Parsing error: ${error.msg}"
   }
 
 private def replForm(dictionary: Dictionary, expression: Expression): String =

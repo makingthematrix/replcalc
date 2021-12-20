@@ -8,9 +8,9 @@ class ExpressionTest extends munit.FunSuite:
 
   private def eval(str: String, expected: Double, delta: Double = 0.001)(implicit parser: Parser = Parser()): Unit =
     parser.parse(str) match
-      case None => 
+      case None =>
         failComparison("Parsed as 'none'", str, expected)
-      case Some(Left(error)) => 
+      case Some(Left(error)) =>
         failComparison(s"Error: ${error.msg}", str, expected)
       case Some(Right(expr)) =>
         expr.run(parser.dictionary) match
@@ -141,6 +141,7 @@ class ExpressionTest extends munit.FunSuite:
   }
 
   test("Expressions with parentheses") {
+    eval("((1))", 1.0)
     eval("1 + (2 + 3) + 4", 10.0)
     eval("1 - (2 + 3) - 4", -8.0)
     eval("-(3*-2)", 6.0)
@@ -157,6 +158,8 @@ class ExpressionTest extends munit.FunSuite:
     shouldReturnParsingError("myFunc(x) = y")
     shouldReturnParsingError("baz(x)blabla = x")
     shouldReturnParsingError("boo(x,,y) = x + y")
+    parse("cat(x)=(1+x)")
+    eval("cat(0)", 1.0)
   }
 
   test("Functions with one argument") {

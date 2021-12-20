@@ -61,6 +61,5 @@ class DictionaryTest extends munit.FunSuite:
     dict.addSpecial(Constant(2.0))
     dict.addSpecial(Constant(3.0))
     assertEquals(dict.specials.size, 3)
-    dict.clean()
-    assert(dict.specials.isEmpty)
+    assertEquals(dict.specials.values.toSet, Set(Constant(1.0), Constant(2.0), Constant(3.0)))
   }
