@@ -2,11 +2,11 @@ package replcalc
 
 import replcalc.Dictionary.isValidName
 import replcalc.Preprocessor.Flags
-import replcalc.expressions.Error
+import replcalc.expressions.{Error, Variable}
 import replcalc.expressions.Error.PreprocessorError
 import replcalc.Parser.isOperator
 
-import scala.annotation.tailrec
+import scala.util.chaining.*
 
 trait Preprocessor {
   def setup(parser: Parser): Unit
@@ -27,7 +27,7 @@ final class PreprocessorImpl(private var parser: Option[Parser],
       (left, right) =  if assignIndex > 0 then (line.substring(0, assignIndex), line.substring(assignIndex + 1)) else ("", line)
       right         <- if flags.wrapFunctionArguments then wrapFunctionArguments(right) else Right(right)
       right         <- if (flags.removeParens) {
-                         parser.map(removeParens(_, right)).getOrElse(Left(PreprocessorError(s"Parser not set")))
+                         parser.map(removeParens(_, left, right)).getOrElse(Left(PreprocessorError(s"Parser not set")))
                        } else {
                          Right(right)
                        }
@@ -96,32 +96,48 @@ object Preprocessor:
         }
     }
 
-  def removeParens(parser: Parser, line: String): Either[Error, String] =
-    withParens(line, functionParens = false) { (opening, closing) =>
-      val pre  = line.substring(0, opening)
-      val post = line.substring(closing + 1)
-      if (pre.nonEmpty && !isOperator(pre.last, '(')) ||
-        (post.nonEmpty && !isOperator(post.head, ')')) then
-        Left(PreprocessorError(s"Unable to parse: $line"))
-      else
-        parser
-          .parse(line.substring(opening + 1, closing))
-          .map {
-            case Left(error) =>
-              Left(error)
-            case Right(expr) =>
-              val name = parser.dictionary.addSpecial(expr)
-              removeParens(parser, s"$pre$name$post")
-          }.getOrElse(Left(PreprocessorError(s"Unable to parse: $line")))
-    }
+  def removeParens(originalParser: Parser, left: String, right: String): Either[Error, String] =
+    def remove(parser: Parser, line: String): Either[Error, String] =
+      withParens(line, functionParens = false) { (opening, closing) =>
+        val pre  = line.substring(0, opening)
+        val post = line.substring(closing + 1)
+        if (pre.nonEmpty && !isOperator(pre.last, '(')) || (post.nonEmpty && !isOperator(post.head, ')')) then
+          Left(PreprocessorError(s"Unable to parse: $line"))
+        else
+          parser
+            .parse(line.substring(opening + 1, closing))
+            .map {
+              case Left(error) =>
+                Left(error)
+              case Right(expr) =>
+                val name = parser.dictionary.addSpecial(expr)
+                remove(parser, s"$pre$name$post")
+            }
+            .getOrElse(Left(PreprocessorError(s"Unable to parse: $line")))
+      }
 
+    parseFunction(left, LineSide.Left) match
+      case None =>
+        remove(originalParser, right)
+      case Some(Left(error)) =>
+        Left(error)
+      case Some(Right(ParsedFunction(_, Nil))) =>
+        remove(originalParser, right)
+      case Some(Right(ParsedFunction(_, arguments))) =>
+        val withArgs = originalParser.copy(arguments.map(arg => arg -> Variable(arg)).toMap)
+        remove(withArgs, right).tap { _ =>
+          (withArgs.dictionary.specials -- originalParser.dictionary.specials.keySet).foreach {
+            case (name, expr) => originalParser.dictionary.add(name, expr, canBeSpecial = true)
+          }
+        }
+  
   private def withParens(line: String, functionParens: Boolean)(body: (Int, Int) => Either[Error, String]): Either[Error, String] =
     findParens(line, functionParens) match
       case None                          => Right(line)
       case Some(Left(error))             => Left(error)
       case Some(Right(opening, closing)) => body(opening, closing)
       
-  def findParens(line: String, functionParens: Boolean): Option[Either[Error, (Int, Int)]] =
+  private def findParens(line: String, functionParens: Boolean): Option[Either[Error, (Int, Int)]] =
     inline def isFunctionParens(line: String, atIndex: Int): Boolean = atIndex != 0 && !isOperator(line(atIndex - 1))
     
     val opening = line.indexOf('(')
