@@ -1,5 +1,6 @@
 package replcalc
 
+import replcalc.Dictionary.isValidName
 import replcalc.Preprocessor.Flags
 import replcalc.expressions.Error
 import replcalc.expressions.Error.PreprocessorError
@@ -34,6 +35,8 @@ final class PreprocessorImpl(private var parser: Option[Parser],
       if left.isEmpty then right else s"$left=$right"
 
 object Preprocessor:
+  def apply(flags: Flags = Flags.AllFlagsOn): Preprocessor = new PreprocessorImpl(None, flags)
+
   final case class Flags(removeWhitespaces:     Boolean = true,
                          wrapFunctionArguments: Boolean = true,
                          removeParens:          Boolean = true)
@@ -41,7 +44,34 @@ object Preprocessor:
   object Flags:
     val AllFlagsOn: Flags = Flags()
 
-  def apply(flags: Flags = Flags.AllFlagsOn): Preprocessor = new PreprocessorImpl(None, flags)
+  enum LineSide:
+    case Left
+    case Right
+
+  final case class ParsedFunction(name: String, arguments: Seq[String])
+
+  def parseFunction(line: String, lineSide: LineSide): Option[Either[Error, ParsedFunction]] =
+    findParens(line, functionParens = true).map {
+      case Left(error) =>
+        Left(error)
+      case Right((_, closing)) if closing + 1 < line.length =>
+        Left(PreprocessorError(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}"))
+      case Right((opening, closing)) =>
+        val functionName = line.substring(0, opening)
+        if !isValidName(functionName) then
+          Left(PreprocessorError(s"Invalid function name: $functionName"))
+        else
+          val inside    = line.substring(opening + 1, closing)
+          val arguments = splitByCommas(inside)
+          val errors    = arguments.collect {
+            case argName if argName.isEmpty                                    => "Empty argument name"
+            case argName if lineSide == LineSide.Left && !isValidName(argName) => argName
+          }
+          if errors.nonEmpty then
+            Left(PreprocessorError(s"Invalid argument(s): ${errors.mkString(", ")}"))
+          else
+            Right(ParsedFunction(functionName, arguments))
+    }
 
   def removeWhitespaces(line: String): Either[Error, String] = Right(line.filterNot(_.isWhitespace))
 

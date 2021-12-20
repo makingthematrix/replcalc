@@ -1,6 +1,7 @@
 package replcalc.expressions
 
 import Error.*
+import replcalc.Preprocessor.{ParsedFunction, LineSide}
 import replcalc.{Dictionary, Parser, Preprocessor}
 import scala.util.chaining.*
 
@@ -14,44 +15,24 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
     else
       val assignIndex   = line.indexOf('=')
       val assignmentStr = line.substring(0, assignIndex)
-      Preprocessor.findParens(assignmentStr, functionParens = true).flatMap {
+      Preprocessor.parseFunction(assignmentStr, LineSide.Left).flatMap {
         case Left(error) =>
           ParsedExpr.error(error)
-        case Right((_, closing)) if closing + 1 < assignmentStr.length =>
-          ParsedExpr.error(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}")
-        case Right((opening, closing)) =>
-          val functionName  = assignmentStr.substring(0, opening)
-          val arguments     = assignmentStr.substring(opening + 1, closing)
+        case Right(ParsedFunction(name, _)) if parser.dictionary.contains(name) =>
+          ParsedExpr.error(s"The function already exists: $name")
+        case Right(ParsedFunction(name, arguments)) =>
           val expressionStr = line.substring(assignIndex + 1)
-          parseAssignment(parser, functionName, arguments, expressionStr)
+          parseAssignment(parser, name, arguments, expressionStr)
       }
 
-  private def parseAssignment(parser: Parser, functionName: String, arguments: String, expressionStr: String): ParsedExpr[FunctionAssignment] =
-    if !Dictionary.isValidName(functionName) then
-      ParsedExpr.error(s"Invalid function name: $functionName")
-    else if parser.dictionary.contains(functionName) then
-      ParsedExpr.error(s"The function already exists: $functionName")
-    else
-      val argNames =
-        if arguments.nonEmpty then
-          arguments.split(",").map(_.trim).toSeq
-        else
-          Seq.empty
-      val errors = argNames.collect {
-        case argName if argName.isEmpty => "Empty argument name"
-        case argName if !Dictionary.isValidName(argName) => argName
+  private def parseAssignment(parser: Parser, name: String, arguments: Seq[String], expressionStr: String): ParsedExpr[FunctionAssignment] =
+    parser
+      .copy(arguments.map(arg => arg -> Variable(arg)).toMap)
+      .parse(expressionStr)
+      .happyPath { expression =>
+        FunctionAssignment(name, arguments, expression).pipe { assignment =>
+          parser.dictionary.add(name, assignment)
+          ParsedExpr(assignment)
+        }
       }
-      if errors.nonEmpty then
-        ParsedExpr.error(s"Invalid argument(s): ${errors.mkString(", ")}")
-      else
-        val argsMap = argNames.map(name => name -> Variable(name)).toMap
-        parser
-          .copy(argsMap)
-          .parse(expressionStr)
-          .happyPath { expression =>
-            FunctionAssignment(functionName, argNames, expression).pipe { assignment =>
-              parser.dictionary.add(functionName, assignment)
-              ParsedExpr(assignment)
-            }
-          }
-          .errorIfEmpty(s"Unable to parse: $expressionStr")
+      .errorIfEmpty(s"Unable to parse: $expressionStr")
