@@ -1,8 +1,8 @@
 package replcalc.expressions
 
 import Error.*
-import replcalc.Preprocessor.{ParsedFunction, LineSide}
-import replcalc.{Dictionary, Parser, Preprocessor}
+import replcalc.{ParsedFunction, Dictionary, Parser, Preprocessor}
+import replcalc.ParsedFunction.LineSide
 import scala.util.chaining.*
 
 final case class FunctionAssignment(name: String, argNames: Seq[String], expr: Expression) extends Expression:
@@ -15,7 +15,7 @@ object FunctionAssignment extends Parseable[FunctionAssignment]:
     else
       val assignIndex   = line.indexOf('=')
       val assignmentStr = line.substring(0, assignIndex)
-      Preprocessor.parseFunction(assignmentStr, LineSide.Left).flatMap {
+      ParsedFunction.parse(assignmentStr, LineSide.Left).flatMap {
         case Left(error) =>
           ParsedExpr.error(error)
         case Right(ParsedFunction(name, _)) if parser.dictionary.contains(name) =>

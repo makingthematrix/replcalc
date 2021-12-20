@@ -139,17 +139,17 @@ class PreprocessorTest extends munit.FunSuite:
   }
 
   test("Parse function line") {
-    import Preprocessor.{LineSide, parseFunction, ParsedFunction}
+    import ParsedFunction.{LineSide, parse}
 
-    assertEquals(parseFunction("foo(x)", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq("x")))))
-    assertEquals(parseFunction("foo(x,y)", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq("x", "y")))))
-    assertEquals(parseFunction("foo(1)", LineSide.Right), Some(Right(ParsedFunction(name = "foo", arguments = Seq("1")))))
-    assert(parseFunction("foo(1)", LineSide.Left).exists(_.isLeft)) // error; constants are not allowed on the left side
-    assertEquals(parseFunction("foo()", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq.empty))))
-    assertEquals(parseFunction("foo", LineSide.Right), None) // not a function
-    assertEquals(parseFunction("foo", LineSide.Left), None) // not a function
-    assertEquals(parseFunction("1+2", LineSide.Right), None) // not a function
-    assert(parseFunction("foo(x))", LineSide.Left).exists(_.isLeft)) // error; parentheses don't match
-    assert(parseFunction("foo(x", LineSide.Left).exists(_.isLeft)) // error; parentheses don't match
-    assert(parseFunction("1_2(x)", LineSide.Left).exists(_.isLeft)) // error; invalid name
+    assertEquals(parse("foo(x)", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq("x")))))
+    assertEquals(parse("foo(x,y)", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq("x", "y")))))
+    assertEquals(parse("foo(1)", LineSide.Right), Some(Right(ParsedFunction(name = "foo", arguments = Seq("1")))))
+    assert(parse("foo(1)", LineSide.Left).exists(_.isLeft)) // error; constants are not allowed on the left side
+    assertEquals(parse("foo()", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq.empty))))
+    assertEquals(parse("foo", LineSide.Right), None) // not a function
+    assertEquals(parse("foo", LineSide.Left), None) // not a function
+    assertEquals(parse("1+2", LineSide.Right), None) // not a function
+    assert(parse("foo(x))", LineSide.Left).exists(_.isLeft)) // error; parentheses don't match
+    assert(parse("foo(x", LineSide.Left).exists(_.isLeft)) // error; parentheses don't match
+    assert(parse("1_2(x)", LineSide.Left).exists(_.isLeft)) // error; invalid name
   }
