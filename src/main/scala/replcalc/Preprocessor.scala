@@ -1,10 +1,10 @@
 package replcalc
 
-import replcalc.Dictionary.isValidName
 import replcalc.Preprocessor.Flags
-import replcalc.expressions.{Error, Variable}
-import replcalc.expressions.Error.PreprocessorError
+import replcalc.expressions.{Error, FunctionAssignment, Variable}
+import replcalc.expressions.Error.{ParsingError, PreprocessorError}
 import replcalc.Parser.isOperator
+import replcalc.Dictionary.isValidName
 
 import scala.annotation.tailrec
 import scala.util.chaining.*
@@ -23,15 +23,12 @@ final class PreprocessorImpl(private var parser: Option[Parser],
 
   override def process(line: String): Either[Error, String] =
     for
+      validParser   <- parser.map(Right(_)).getOrElse(Left(PreprocessorError(s"Parser not set")))
       line          <- if flags.removeWhitespaces then removeWhitespaces(line) else Right(line)
       assignIndex   =  line.indexOf('=')
       (left, right) =  if assignIndex > 0 then (line.substring(0, assignIndex), line.substring(assignIndex + 1)) else ("", line)
       right         <- if flags.wrapFunctionArguments then wrapFunctionArguments(right) else Right(right)
-      right         <- if (flags.removeParens) {
-                         parser.map(removeParens(_, left, right)).getOrElse(Left(PreprocessorError(s"Parser not set")))
-                       } else {
-                         Right(right)
-                       }
+      right         <- if flags.removeParens then removeParens(validParser, left, right) else Right(right)
     yield
       if left.isEmpty then right else s"$left=$right"
 
@@ -79,20 +76,20 @@ object Preprocessor:
   def wrapFunctionArguments(line: String): Either[Error, String] =
     withParens(line, functionParens = true) { (opening, closing) =>
       val inside = line.substring(opening + 1, closing)
-      val args =
+      val arguments =
         splitByCommas(inside).map {
-          case arg if arg.forall(c => !isOperator(c)) && findParens(arg, functionParens = true).isEmpty =>
+          case arg if arg.forall(!isOperator(_)) && findParens(arg, functionParens = true).isEmpty =>
             Right(arg)
           case arg =>
             wrapFunctionArguments(arg).map(wrapped => s"($wrapped)")
         }
-      val errors = args.collect { case Left(error) => error.msg }
+      val errors = arguments.collect { case Left(error) => error.msg }
       if errors.nonEmpty then
         Left(PreprocessorError(errors.mkString("; ")))
       else
         wrapFunctionArguments(line.substring(closing + 1)).map { post =>
           val pre     = line.substring(0, opening)
-          val argList = args.collect { case Right(arg) => arg }.mkString(",")
+          val argList = arguments.collect { case Right(arg) => arg }.mkString(",")
           s"$pre($argList)$post"
         }
     }

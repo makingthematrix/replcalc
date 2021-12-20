@@ -35,4 +35,3 @@ object MultiplyDivide extends Parseable[MultiplyDivide]:
         case (_, Left(error))     => Left(error)
         case (Right(l), Right(r)) => Right(MultiplyDivide(l, r, isDivision))
       }
-

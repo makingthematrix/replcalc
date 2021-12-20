@@ -137,7 +137,7 @@ class PreprocessorTest extends munit.FunSuite:
     assertEquals(pre.process("(foo(1+2,3+4)+2)+bar(1+2,3+4)"), Right("(foo((1+2),(3+4))+2)+bar((1+2),(3+4))"))
     assertEquals(pre.process("foo(1,bar(2,3),4)"), Right("foo(1,(bar(2,3)),4)"))
   }
-  
+
   test("Parse function line") {
     import Preprocessor.{LineSide, parseFunction, ParsedFunction}
 
