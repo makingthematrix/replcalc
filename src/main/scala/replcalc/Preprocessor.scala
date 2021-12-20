@@ -28,8 +28,8 @@ package replcalc
  */
 
 import replcalc.Preprocessor.Flags
-import replcalc.expressions.{Error, FunctionAssignment, Variable}
-import replcalc.expressions.Error.{ParsingError, PreprocessorError}
+import replcalc.expressions.{Error, Variable}
+import replcalc.expressions.Error.PreprocessorError
 import replcalc.Parser.isOperator
 import replcalc.Dictionary.isValidName
 import replcalc.ParsedFunction.LineSide

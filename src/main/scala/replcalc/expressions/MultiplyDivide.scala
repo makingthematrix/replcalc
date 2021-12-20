@@ -1,6 +1,6 @@
 package replcalc.expressions
 
-import Error.*
+import Error.EvaluationError
 import replcalc.{Dictionary, Parser}
 import Expression.isZero
 

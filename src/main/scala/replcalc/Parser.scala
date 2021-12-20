@@ -33,8 +33,9 @@ package replcalc
  */
 
 import replcalc.Preprocessor.Flags
-import replcalc.expressions.*
 import replcalc.expressions.Error.ParsingError
+import replcalc.expressions.*
+
 import scala.util.chaining.*
 
 trait Parser {

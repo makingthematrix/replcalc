@@ -1,7 +1,6 @@
 package replcalc.expressions
 
-import Error.ParsingError
-import replcalc.{Dictionary, Parser, expressions}
+import replcalc.{Dictionary, Parser}
 
 /**
  * Unary minus

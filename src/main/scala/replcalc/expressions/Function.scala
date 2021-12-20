@@ -1,7 +1,7 @@
 package replcalc.expressions
 
 import replcalc.{Dictionary, ParsedFunction, Parser, Preprocessor}
-import replcalc.expressions.Error.{EvaluationError, ParsingError}
+import replcalc.expressions.Error.EvaluationError
 import replcalc.ParsedFunction.LineSide
 
 /**
