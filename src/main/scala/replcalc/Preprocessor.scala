@@ -6,6 +6,7 @@ import replcalc.expressions.{Error, Variable}
 import replcalc.expressions.Error.PreprocessorError
 import replcalc.Parser.isOperator
 
+import scala.annotation.tailrec
 import scala.util.chaining.*
 
 trait Preprocessor {
@@ -168,13 +169,14 @@ object Preprocessor:
       }
       if counter == 0 then Some(index) else None
 
-  def splitByCommas(line: String): List[String] =
+  @tailrec
+  private def splitByCommas(line: String, acc: List[String] = Nil): List[String] =
     if line.isEmpty then
-      Nil
-    else  
+      acc
+    else
       findNextComma(line) match
-        case None             => List(line)
-        case Some(commaIndex) => line.substring(0, commaIndex) :: splitByCommas(line.substring(commaIndex + 1))
+        case None             => acc :+ line
+        case Some(commaIndex) => splitByCommas(line.substring(commaIndex + 1), acc :+ line.substring(0, commaIndex))
 
   private def findNextComma(line: String): Option[Int] =
     val commaIndex = line.indexOf(',')
