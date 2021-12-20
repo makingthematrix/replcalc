@@ -1,8 +1,7 @@
 package replcalc.expressions
 
-import replcalc.Preprocessor.ParsedFunction
-import replcalc.{Dictionary, Parser, Preprocessor}
-import replcalc.Preprocessor.LineSide
+import replcalc.{ParsedFunction, Dictionary, Parser, Preprocessor}
+import replcalc.ParsedFunction.LineSide
 import replcalc.expressions.Error.{EvaluationError, ParsingError}
 
 final case class Function(name: String, args: Seq[Expression]) extends Expression:
@@ -16,7 +15,7 @@ final case class Function(name: String, args: Seq[Expression]) extends Expressio
 
 object Function extends Parseable[Function]:
   override def parse(parser: Parser, line: String): ParsedExpr[Function] =
-    Preprocessor.parseFunction(line, LineSide.Right).flatMap {
+    ParsedFunction.parse(line, LineSide.Right).flatMap {
       case Left(error) =>
         ParsedExpr.error(error)
       case Right(ParsedFunction(name, _)) if !parser.dictionary.contains(name) =>

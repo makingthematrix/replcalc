@@ -5,6 +5,8 @@ import replcalc.expressions.{Error, FunctionAssignment, Variable}
 import replcalc.expressions.Error.{ParsingError, PreprocessorError}
 import replcalc.Parser.isOperator
 import replcalc.Dictionary.isValidName
+import replcalc.ParsedFunction
+import replcalc.ParsedFunction.LineSide
 
 import scala.annotation.tailrec
 import scala.util.chaining.*
@@ -41,35 +43,6 @@ object Preprocessor:
 
   object Flags:
     val AllFlagsOn: Flags = Flags()
-
-  enum LineSide:
-    case Left
-    case Right
-
-  final case class ParsedFunction(name: String, arguments: Seq[String])
-
-  def parseFunction(line: String, lineSide: LineSide): Option[Either[Error, ParsedFunction]] =
-    findParens(line, functionParens = true).map {
-      case Left(error) =>
-        Left(error)
-      case Right((_, closing)) if closing + 1 < line.length =>
-        Left(PreprocessorError(s"Unrecognized chunk of a function expression: ${line.substring(closing + 1)}"))
-      case Right((opening, closing)) =>
-        val functionName = line.substring(0, opening)
-        if !isValidName(functionName) then
-          Left(PreprocessorError(s"Invalid function name: $functionName"))
-        else
-          val inside    = line.substring(opening + 1, closing)
-          val arguments = splitByCommas(inside)
-          val errors    = arguments.collect {
-            case argName if argName.isEmpty                                    => "Empty argument name"
-            case argName if lineSide == LineSide.Left && !isValidName(argName) => argName
-          }
-          if errors.nonEmpty then
-            Left(PreprocessorError(s"Invalid argument(s): ${errors.mkString(", ")}"))
-          else
-            Right(ParsedFunction(functionName, arguments))
-    }
 
   def removeWhitespaces(line: String): Either[Error, String] =
     if line.exists(_.isWhitespace) then
@@ -118,7 +91,7 @@ object Preprocessor:
             .getOrElse(Left(PreprocessorError(s"Unable to parse: $line")))
       }
 
-    parseFunction(left, LineSide.Left) match
+    ParsedFunction.parse(left, LineSide.Left) match
       case None =>
         remove(originalParser, right)
       case Some(Left(error)) =>
@@ -139,7 +112,7 @@ object Preprocessor:
       case Some(Left(error))             => Left(error)
       case Some(Right(opening, closing)) => body(opening, closing)
       
-  private def findParens(line: String, functionParens: Boolean): Option[Either[Error, (Int, Int)]] =
+  def findParens(line: String, functionParens: Boolean): Option[Either[Error, (Int, Int)]] =
     inline def isFunctionParens(line: String, atIndex: Int): Boolean = atIndex != 0 && !isOperator(line(atIndex - 1))
     
     val opening = line.indexOf('(')
@@ -171,7 +144,7 @@ object Preprocessor:
       if counter == 0 then Some(index) else None
 
   @tailrec
-  private def splitByCommas(line: String, acc: List[String] = Nil): List[String] =
+  def splitByCommas(line: String, acc: List[String] = Nil): List[String] =
     if line.isEmpty then
       acc
     else
