@@ -71,7 +71,11 @@ object Preprocessor:
             Right(ParsedFunction(functionName, arguments))
     }
 
-  def removeWhitespaces(line: String): Either[Error, String] = Right(line.filterNot(_.isWhitespace))
+    def removeWhitespaces(line: String): Either[Error, String] =
+      if line.exists(_.isWhitespace) then
+        Right(line.filterNot(_.isWhitespace))
+      else
+        Right(line)
 
   def wrapFunctionArguments(line: String): Either[Error, String] =
     withParens(line, functionParens = true) { (opening, closing) =>
