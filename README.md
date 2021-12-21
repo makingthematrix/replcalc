@@ -39,6 +39,12 @@ If you want to exit the program, type `:exit`. (Note the `:` sign).
 
 ### Other notes
 
-Apart from playing with the calculator, you can look through the history of pull requests, the tickets on the GitHub Projects page, and also through comments in the headers of each file, and read all about the process I used and what was I thinking while working on it. You will see how I introduced each feature, but also how I made some changes that were later removed, how I found and fixed bugs, etc. In short, this project shows how I like to work if I have enough time for all the things we usually neglect a bit in our programming work - unit tests, documentation, and so on.
+A REPL calculator is basically a very simple compiler. I remember from my compiler course at Warsaw University of Technology, back in 2003, that it was interesting and challenging but since then, sadly, I didn't have many opportunities to work with compilers. So my knowledge is a bit rusty. I'm sure I wouldn't bump into one or two bugs if I knew better what I was doing.
+
+There are two books on the topic I think I can recommend, although I didn't read them yet and I base in on positive reviews shared by others. I'm reading the first one now, and I plan to read the other later:
+1. [Compiler Design in C](https://holub.com/compiler/) by Allen Holub, who is also my authority on all things Agile
+2. [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom
+
+Apart from it being about compilers, this project shows how I like to work if I have enough time for all the things we usually neglect a bit in our programming work - unit tests, documentation, and so on. You can look through the history of pull requests, the tickets on the GitHub Projects page, and also through comments in the headers of each file, and read all about the process I used and what was I thinking while working on it. You will see how I introduced each feature, but also how I made some changes that were later removed, how I found and fixed bugs, etc. 
 
 Enjoy!
