@@ -27,8 +27,15 @@ final case class Function(name: String, args: Seq[Expression]) extends Expressio
   override protected def evaluate(dict: Dictionary): Either[Error, Double] =
     dict.get(name) match
       case Some(f: FunctionAssignment) if f.argNames.length == args.length =>
-        val argMap = f.argNames.zip(args).toMap
-        f.run(dict.copy(argMap))
+        val evaluatedArgs = args.map(_.run(dict))
+        val evaluationErrors = evaluatedArgs.collect { case Left(error) => error }
+        if evaluationErrors.nonEmpty then
+          Left(EvaluationError(evaluationErrors.mkString("; ")))
+        else
+          val validArgs = evaluatedArgs.collect { case Right(number) => Constant(number) }
+          val argMap = f.argNames.zip(validArgs).toMap
+          val newDict = dict.copy(argMap)
+          f.run(newDict)
       case _ =>
         Left(EvaluationError(s"Function not found: $name with ${args.length} arguments"))
 
@@ -45,12 +52,12 @@ object Function extends Parseable[Function]:
 
   private def parseFunction(parser: Parser, name: String, args: Seq[String]): ParsedExpr[Function] =
     val parsedArgs = args.map { arg => arg -> parser.parse(arg) }
-    val errors = parsedArgs.collect {
+    val parseErrors = parsedArgs.collect {
       case (argName, None)              => s"Unable to parse argument $argName"
       case (argName, Some(Left(error))) => s"Unable to parse argument $argName: ${error.msg}"
     }
-    if errors.nonEmpty then
-      ParsedExpr.error(errors.mkString("; "))
+    if parseErrors.nonEmpty then
+      ParsedExpr.error(parseErrors.mkString("; "))
     else
       val validArgs = parsedArgs.collect { case (_, Some(Right(expr))) => expr }
       ParsedExpr(Function(name, validArgs))
