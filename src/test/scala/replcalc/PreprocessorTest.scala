@@ -137,19 +137,3 @@ class PreprocessorTest extends munit.FunSuite:
     assertEquals(pre.process("(foo(1+2,3+4)+2)+bar(1+2,3+4)"), Right("(foo((1+2),(3+4))+2)+bar((1+2),(3+4))"))
     assertEquals(pre.process("foo(1,bar(2,3),4)"), Right("foo(1,(bar(2,3)),4)"))
   }
-
-  test("Parse function line") {
-    import ParsedFunction.{LineSide, parse}
-
-    assertEquals(parse("foo(x)", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq("x")))))
-    assertEquals(parse("foo(x,y)", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq("x", "y")))))
-    assertEquals(parse("foo(1)", LineSide.Right), Some(Right(ParsedFunction(name = "foo", arguments = Seq("1")))))
-    assert(parse("foo(1)", LineSide.Left).exists(_.isLeft)) // error; constants are not allowed on the left side
-    assertEquals(parse("foo()", LineSide.Left), Some(Right(ParsedFunction(name = "foo", arguments = Seq.empty))))
-    assertEquals(parse("foo", LineSide.Right), None) // not a function
-    assertEquals(parse("foo", LineSide.Left), None) // not a function
-    assertEquals(parse("1+2", LineSide.Right), None) // not a function
-    assert(parse("foo(x))", LineSide.Left).exists(_.isLeft)) // error; parentheses don't match
-    assert(parse("foo(x", LineSide.Left).exists(_.isLeft)) // error; parentheses don't match
-    assert(parse("1_2(x)", LineSide.Left).exists(_.isLeft)) // error; invalid name
-  }

@@ -20,11 +20,10 @@ package replcalc
  * and the preprocessor is going to be called on them, we know for sure that whitespaces were already removed.
  *
  * About recursion:
- * Methods in this class use recursion to move around the line of text and, for example, perform the same task of
- * turning an expression inside parentheses into a special variable, but for an even more nested pair of parentheses.
- * I made one of them tail-recursive but decided not to do it with others since the code here works with one line of
- * text at the time - usually a quite short short line - so using non-tail-recursive methods is safe and the code looks
- * more readable. In the one case where I used tail-recursion (`splitByCommas`) it was very straightforward.
+ * Methods in this class (and in ParsedFunction) use recursion to work on a line of text and, for example, perform
+ * the same given task on a part of the text enclosed in parentheses. I made some of them tail-recursive but decided
+ * not to do it with some others since the code here works with one line of text at the time - usually a quite short
+ * line - so using non-tail-recursive methods is safe and, on the other hard, their code looks more readable.
  */
 
 import replcalc.Preprocessor.Flags
