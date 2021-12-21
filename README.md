@@ -39,9 +39,9 @@ If you want to exit the program, type `:exit`. (Note the `:` sign).
 
 ### Other notes
 
-A REPL calculator is basically a very simple compiler. I remember from my compiler course at Warsaw University of Technology, back in 2003, that it was interesting and challenging but since then, sadly, I didn't have many opportunities to work with compilers. So my knowledge is a bit rusty. I'm sure I wouldn't bump into one or two bugs if I knew better what I was doing.
+A REPL calculator is basically a very simple compiler. I remember from my compiler course at Warsaw University of Technology, back in 2003, that it was interesting and challenging but since then, sadly, I didn't have many opportunities to work with compilers. So my knowledge is a bit rusty. I'm sure I wouldn't have bumped into one or two bugs if I knew better what I was doing.
 
-There are two books on the topic I think I can recommend, although I didn't read them yet and I base in on positive reviews shared by others. I'm reading the first one now, and I plan to read the other later:
+There are two books on the topic I think I can recommend, although I haven't read them yet and I base my opinion on positive reviews shared by others. I'm reading the first one now, and I plan to read the other later:
 1. [Compiler Design in C](https://holub.com/compiler/) by Allen Holub, who is also my authority on all things Agile
 2. [Crafting Interpreters](https://craftinginterpreters.com/) by Robert Nystrom
 
