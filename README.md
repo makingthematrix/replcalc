@@ -10,7 +10,7 @@ but since then it has grown a lot. Actually, now I should replace that code with
 
 You need [`sbt`](https://www.scala-sbt.org/index.html). 
 When you have it installed, download this project, go to its main folder with a terminal of your choice and type `sbt run`.
-After `sbt` download and compiles everything it needs, you should see something like this:
+After `sbt` downloads and compiles everything it needs, you should see something like this:
 ```
 [info] running replcalc.main 
 > 
@@ -18,7 +18,7 @@ After `sbt` download and compiles everything it needs, you should see something 
 That `>` is a prompt. Now you can write mathematical expressions and the program will display their results.
 If you want to exit the program, type `:exit`. (Note the `:` sign).
 
-### What does it support
+### What it does support
 
 * Basic mathematical operations: addition, substraction, multiplication, division, and negation (i.e. a unary '-' operator).
 * Parentheses.
@@ -29,7 +29,7 @@ If you want to exit the program, type `:exit`. (Note the `:` sign).
 * You can see all functions and variables you defined by typing `:list`.
 * If you make a typo or another error, the calculator will try it best to display a meaningful error message.
 
-### What does it not support
+### What it does not support
 
 * No function reassignment.
 * No function overloading. There can be only one function of a given name. Even if you want to create a function with the same name but a different number of arguments, it won't work.
